@@ -234,7 +234,7 @@ body {
 
 .time-entry-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: 1fr;
   gap: 20px;
   padding-left: 20px;
 }
@@ -329,4 +329,12 @@ body {
 .entry-date {
   font-size: 0.8rem;
   color: var(--text-secondary);
+}
+
+.management-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  padding-left: 20px;
+  margin-bottom: 20px;
 }

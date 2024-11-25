@@ -10,6 +10,15 @@ function TimeEntry() {
     duration: '',
     description: ''
   });
+  const [newProject, setNewProject] = useState({
+    name: '',
+    description: ''
+  });
+  const [newTask, setNewTask] = useState({
+    name: '',
+    description: '',
+    project_id: ''
+  });
 
   useEffect(() => {
     fetchProjects();
@@ -48,7 +57,41 @@ function TimeEntry() {
     }
   }
 
-  async function handleSubmit(e) {
+  async function handleCreateProject(e) {
+    e.preventDefault();
+    const { data, error } = await supabase
+      .from('projects')
+      .insert([newProject])
+      .select();
+
+    if (error) {
+      console.error('Error creating project:', error);
+    } else {
+      setProjects([...projects, data[0]]);
+      setNewProject({ name: '', description: '' });
+      fetchProjects(); // Refresh the projects list
+    }
+  }
+
+  async function handleCreateTask(e) {
+    e.preventDefault();
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert([newTask])
+      .select();
+
+    if (error) {
+      console.error('Error creating task:', error);
+    } else {
+      setTasks([...tasks, data[0]]);
+      setNewTask({ name: '', description: '', project_id: '' });
+      if (selectedProject) {
+        fetchTasks(selectedProject); // Refresh the tasks list
+      }
+    }
+  }
+
+  async function handleTimeEntry(e) {
     e.preventDefault();
     const { data, error } = await supabase
       .from('time_entries')
@@ -68,10 +111,77 @@ function TimeEntry() {
 
   return (
     <div className="dashboard">
+      {/* Management section - Two cards side by side */}
+      <div className="management-grid">
+        {/* Project Creation Card */}
+        <div className="entry-card">
+          <h2>Create New Project</h2>
+          <form onSubmit={handleCreateProject} className="entry-form">
+            <div className="form-group">
+              <label>Project Name</label>
+              <input
+                type="text"
+                value={newProject.name}
+                onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Description</label>
+              <textarea
+                value={newProject.description}
+                onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+              />
+            </div>
+            <button type="submit" className="submit-btn">Create Project</button>
+          </form>
+        </div>
+
+        {/* Task Creation Card */}
+        <div className="entry-card">
+          <h2>Create New Task</h2>
+          <form onSubmit={handleCreateTask} className="entry-form">
+            <div className="form-group">
+              <label>Project</label>
+              <select
+                value={newTask.project_id}
+                onChange={(e) => setNewTask({ ...newTask, project_id: e.target.value })}
+                required
+              >
+                <option value="">Select Project</option>
+                {projects.map(project => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Task Name</label>
+              <input
+                type="text"
+                value={newTask.name}
+                onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Description</label>
+              <textarea
+                value={newTask.description}
+                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+              />
+            </div>
+            <button type="submit" className="submit-btn">Create Task</button>
+          </form>
+        </div>
+      </div>
+
+      {/* Time Entry section - Single card */}
       <div className="time-entry-grid">
         <div className="entry-card">
           <h2>Add Time Entry</h2>
-          <form onSubmit={handleSubmit} className="entry-form">
+          <form onSubmit={handleTimeEntry} className="entry-form">
             <div className="form-group">
               <label>Project</label>
               <select
