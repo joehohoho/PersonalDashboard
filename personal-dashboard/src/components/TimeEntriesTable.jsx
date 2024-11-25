@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
 
+const formatTime = (time) => {
+  if (!time) return '';
+  return time.substring(0, 5); // Takes only HH:MM from HH:MM:SS
+};
+
 function TimeEntriesTable({ refreshTrigger }) {
   const [entries, setEntries] = useState([]);
   const [filters, setFilters] = useState({
@@ -8,8 +13,8 @@ function TimeEntriesTable({ refreshTrigger }) {
     startDate: '',
     endDate: '',
     dateFilterType: 'specific',
-    sortColumn: null,
-    sortDirection: 'asc'
+    sortColumn: 'date',
+    sortDirection: 'desc'
   });
   const [editingEntry, setEditingEntry] = useState(null);
   const [projects, setProjects] = useState([]);
@@ -107,13 +112,24 @@ function TimeEntriesTable({ refreshTrigger }) {
       return matchesProject && matchesDate;
     })
     .sort((a, b) => {
-      if (!filters.sortColumn) return 0;
+      if (!filters.sortColumn) {
+        const dateComparison = a.work_date > b.work_date ? 1 : a.work_date < b.work_date ? -1 : 0;
+        if (dateComparison === 0) {
+          return a.start_time > b.start_time ? 1 : -1;
+        }
+        return dateComparison;
+      }
 
       let aValue, bValue;
       switch (filters.sortColumn) {
         case 'date':
-          aValue = a.work_date;
-          bValue = b.work_date;
+          if (a.work_date === b.work_date) {
+            aValue = a.start_time;
+            bValue = b.start_time;
+          } else {
+            aValue = a.work_date;
+            bValue = b.work_date;
+          }
           break;
         case 'project':
           aValue = a.tasks?.projects?.name || '';
@@ -374,8 +390,8 @@ function TimeEntriesTable({ refreshTrigger }) {
                       <td>{entry.work_date}</td>
                       <td>{entry.tasks?.projects?.name}</td>
                       <td>{entry.tasks?.name}</td>
-                      <td>{entry.start_time}</td>
-                      <td>{entry.end_time}</td>
+                      <td>{formatTime(entry.start_time)}</td>
+                      <td>{formatTime(entry.end_time)}</td>
                       <td>{Number(entry.duration).toFixed(2)}</td>
                       <td>{entry.description}</td>
                       <td>
