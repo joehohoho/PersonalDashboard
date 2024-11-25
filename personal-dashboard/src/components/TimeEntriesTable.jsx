@@ -150,6 +150,10 @@ function TimeEntriesTable({ refreshTrigger }) {
       }
     });
 
+  const calculateTotalHours = (entries) => {
+    return entries.reduce((total, entry) => total + Number(entry.duration), 0);
+  };
+
   return (
     <div className="time-entries-table">
       <div className="card-header" onClick={() => setIsTableOpen(!isTableOpen)}>
@@ -382,6 +386,18 @@ function TimeEntriesTable({ refreshTrigger }) {
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr>
+                <td colSpan="5" style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                  Totals ({filteredEntries.length} entries):
+                </td>
+                <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                  {calculateTotalHours(filteredEntries).toFixed(2)}
+                </td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       )}

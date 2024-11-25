@@ -19,4 +19,16 @@
 
 .time-entries-table th:last-child:hover {
   background-color: inherit;
+}
+
+.time-entries-table tfoot {
+  border-top: 2px solid var(--border-color);
+}
+
+.time-entries-table tfoot td {
+  padding: 12px 8px;
+}
+
+.time-entries-table tfoot td:nth-child(6) {
+  text-align: right;
 } 
