@@ -109,11 +109,24 @@ function ProjectTaskManager({ refreshTrigger, onUpdate = () => {} }) {
     }
   }
 
+  const handleViewTasks = (projectId) => {
+    setSelectedProject(projectId);
+    setIsTasksOpen(true);
+    setEditingProject(null);
+  };
+
+  const handleProjectsCollapse = () => {
+    setIsProjectsOpen(!isProjectsOpen);
+    if (isProjectsOpen) {
+      setIsTasksOpen(false);
+    }
+  };
+
   return (
     <div className="management-grid">
       {/* Manage Projects Card */}
       <div className="entry-card">
-        <div className="card-header" onClick={() => setIsProjectsOpen(!isProjectsOpen)}>
+        <div className="card-header" onClick={handleProjectsCollapse}>
           <h2>Manage Projects</h2>
           <button className="collapse-btn">
             {isProjectsOpen ? '▼' : '▶'}
@@ -179,10 +192,7 @@ function ProjectTaskManager({ refreshTrigger, onUpdate = () => {} }) {
                     <div className="list-item-actions">
                       <button 
                         className="action-btn"
-                        onClick={() => {
-                          setSelectedProject(project.id);
-                          setEditingProject(null);
-                        }}
+                        onClick={() => handleViewTasks(project.id)}
                       >
                         View Tasks
                       </button>
@@ -201,8 +211,8 @@ function ProjectTaskManager({ refreshTrigger, onUpdate = () => {} }) {
         )}
       </div>
 
-      {/* Manage Tasks Card */}
-      {selectedProject && (
+      {/* Manage Tasks Card - only show if projects are open */}
+      {selectedProject && isProjectsOpen && (
         <div className="entry-card">
           <div className="card-header" onClick={() => setIsTasksOpen(!isTasksOpen)}>
             <h2>Manage Tasks</h2>
