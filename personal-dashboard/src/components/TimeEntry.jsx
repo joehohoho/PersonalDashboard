@@ -3,6 +3,26 @@ import { supabase } from '../config/supabase';
 import TimeEntriesTable from './TimeEntriesTable';
 import ProjectTaskManager from './ProjectTaskManager';
 import '../styles/TimeEntry.css';
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 function TimeEntry({ refreshTrigger }) {
   const [projects, setProjects] = useState([]);
@@ -35,6 +55,8 @@ function TimeEntry({ refreshTrigger }) {
     month: 0,
     year: 0
   });
+  const [projectHours, setProjectHours] = useState([]);
+  const [taskHours, setTaskHours] = useState([]);
 
   useEffect(() => {
     console.log('TimeEntry refreshTrigger changed:', refreshTrigger);
@@ -43,6 +65,14 @@ function TimeEntry({ refreshTrigger }) {
 
   useEffect(() => {
     calculateMetrics();
+  }, [timeEntryUpdates]);
+
+  useEffect(() => {
+    fetchProjectHours();
+  }, [timeEntryUpdates]);
+
+  useEffect(() => {
+    fetchTaskHours();
   }, [timeEntryUpdates]);
 
   const fetchProjects = async () => {
@@ -254,6 +284,171 @@ function TimeEntry({ refreshTrigger }) {
     return new Date().toLocaleString('en-US', { month: 'short' });
   };
 
+  const fetchProjectHours = async () => {
+    const { data: timeEntries, error: timeError } = await supabase
+      .from('time_entries')
+      .select(`
+        duration,
+        tasks (
+          project_id,
+          projects (
+            name
+          )
+        )
+      `);
+
+    if (timeError) {
+      console.error('Error fetching project hours:', timeError);
+      return;
+    }
+
+    // Calculate hours per project
+    const projectTotals = timeEntries.reduce((acc, entry) => {
+      const projectName = entry.tasks?.projects?.name;
+      if (projectName) {
+        acc[projectName] = (acc[projectName] || 0) + Number(entry.duration);
+      }
+      return acc;
+    }, {});
+
+    // Convert to array and sort by hours
+    const sortedProjects = Object.entries(projectTotals)
+      .map(([name, hours]) => ({ name, hours }))
+      .sort((a, b) => b.hours - a.hours);
+
+    setProjectHours(sortedProjects);
+  };
+
+  const fetchTaskHours = async () => {
+    const { data: timeEntries, error: timeError } = await supabase
+      .from('time_entries')
+      .select(`
+        duration,
+        tasks (
+          name
+        )
+      `);
+
+    if (timeError) {
+      console.error('Error fetching task hours:', timeError);
+      return;
+    }
+
+    // Group tasks and calculate hours
+    const taskTotals = timeEntries.reduce((acc, entry) => {
+      const taskName = entry.tasks?.name?.toLowerCase() || '';
+      // Group dev-related tasks together
+      const category = taskName.includes('dev') ? 'Development' : taskName;
+      acc[category] = (acc[category] || 0) + Number(entry.duration);
+      return acc;
+    }, {});
+
+    // Convert to array and sort by hours
+    const sortedTasks = Object.entries(taskTotals)
+      .map(([name, hours]) => ({ name, hours }))
+      .sort((a, b) => b.hours - a.hours);
+
+    setTaskHours(sortedTasks);
+  };
+
+  const chartData = {
+    labels: projectHours.map(p => p.name),
+    datasets: [
+      {
+        label: 'Hours',
+        data: projectHours.map(p => p.hours),
+        backgroundColor: '#4a90e2',
+        borderRadius: 6,
+      }
+    ]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      },
+      title: {
+        display: true,
+        text: 'Hours by Project',
+        color: '#ffffff',
+        font: {
+          size: 16
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        },
+        ticks: {
+          color: '#ffffff'
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: '#ffffff'
+        }
+      }
+    }
+  };
+
+  const taskChartData = {
+    labels: taskHours.map(t => t.name),
+    datasets: [
+      {
+        label: 'Hours',
+        data: taskHours.map(t => t.hours),
+        backgroundColor: '#45b7cd',  // Different color from project chart
+        borderRadius: 6,
+      }
+    ]
+  };
+
+  const taskChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      },
+      title: {
+        display: true,
+        text: 'Hours by Task Category',
+        color: '#ffffff',
+        font: {
+          size: 16
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        },
+        ticks: {
+          color: '#ffffff'
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: '#ffffff'
+        }
+      }
+    }
+  };
+
   return (
     <div className="dashboard">
       {/* Add metrics cards at the top */}
@@ -273,6 +468,16 @@ function TimeEntry({ refreshTrigger }) {
         <div className="metric-card">
           <h3>This Year</h3>
           <p>{metrics.year.toFixed(2)}</p>
+        </div>
+      </div>
+
+      {/* Charts row */}
+      <div className="charts-row">
+        <div className="chart-container">
+          <Bar data={chartData} options={chartOptions} />
+        </div>
+        <div className="chart-container">
+          <Bar data={taskChartData} options={taskChartOptions} />
         </div>
       </div>
 
