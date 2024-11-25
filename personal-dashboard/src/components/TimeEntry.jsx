@@ -29,11 +29,21 @@ function TimeEntry({ refreshTrigger }) {
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
   const [isTimeEntryFormOpen, setIsTimeEntryFormOpen] = useState(true);
   const [timeEntryUpdates, setTimeEntryUpdates] = useState(0);
+  const [metrics, setMetrics] = useState({
+    today: 0,
+    week: 0,
+    month: 0,
+    year: 0
+  });
 
   useEffect(() => {
     console.log('TimeEntry refreshTrigger changed:', refreshTrigger);
     fetchProjects();
   }, [refreshTrigger]);
+
+  useEffect(() => {
+    calculateMetrics();
+  }, [timeEntryUpdates]);
 
   const fetchProjects = async () => {
     console.log('Fetching open projects for TimeEntry...');
@@ -206,8 +216,66 @@ function TimeEntry({ refreshTrigger }) {
     fetchOpenProjects();
   };
 
+  const calculateMetrics = async () => {
+    const { data, error } = await supabase
+      .from('time_entries')
+      .select('duration, work_date');
+    
+    if (error) {
+      console.error('Error fetching metrics:', error);
+      return;
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
+
+    const totals = {
+      today: data
+        .filter(entry => entry.work_date === today)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
+      week: data
+        .filter(entry => new Date(entry.work_date) >= weekStart)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
+      month: data
+        .filter(entry => new Date(entry.work_date) >= monthStart)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
+      year: data
+        .filter(entry => entry.work_date >= yearStart)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0)
+    };
+
+    setMetrics(totals);
+  };
+
+  const getCurrentMonthAbbr = () => {
+    return new Date().toLocaleString('en-US', { month: 'short' });
+  };
+
   return (
     <div className="dashboard">
+      {/* Add metrics cards at the top */}
+      <div className="metrics-row">
+        <div className="metric-card">
+          <h3>Today</h3>
+          <p>{metrics.today.toFixed(2)}</p>
+        </div>
+        <div className="metric-card">
+          <h3>This Week</h3>
+          <p>{metrics.week.toFixed(2)}</p>
+        </div>
+        <div className="metric-card">
+          <h3>This Month ({getCurrentMonthAbbr()})</h3>
+          <p>{metrics.month.toFixed(2)}</p>
+        </div>
+        <div className="metric-card">
+          <h3>This Year</h3>
+          <p>{metrics.year.toFixed(2)}</p>
+        </div>
+      </div>
+
       {/* Time Entry Card */}
       <div className="time-entry-grid">
         <div className="entry-card">

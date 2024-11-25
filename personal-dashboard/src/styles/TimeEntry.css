@@ -24,4 +24,37 @@
   border-radius: 4px;
   font-family: inherit;
   box-sizing: border-box;
+}
+
+.metrics-row {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem auto;
+  max-width: 800px;
+}
+
+.metric-card {
+  flex: 1 1 0;
+  min-width: 180px;
+  background-color: #2a2a2a;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  text-align: center;
+}
+
+.metric-card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  color: #ffffff;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.metric-card p {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #ffffff;
 } 
