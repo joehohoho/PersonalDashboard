@@ -57,6 +57,8 @@ function TimeEntry({ refreshTrigger }) {
   });
   const [projectHours, setProjectHours] = useState([]);
   const [taskHours, setTaskHours] = useState([]);
+  const [timeDistribution, setTimeDistribution] = useState([]);
+  const [dayDistribution, setDayDistribution] = useState([]);
 
   useEffect(() => {
     console.log('TimeEntry refreshTrigger changed:', refreshTrigger);
@@ -73,6 +75,14 @@ function TimeEntry({ refreshTrigger }) {
 
   useEffect(() => {
     fetchTaskHours();
+  }, [timeEntryUpdates]);
+
+  useEffect(() => {
+    fetchTimeDistribution();
+  }, [timeEntryUpdates]);
+
+  useEffect(() => {
+    fetchDayDistribution();
   }, [timeEntryUpdates]);
 
   const fetchProjects = async () => {
@@ -338,11 +348,6 @@ function TimeEntry({ refreshTrigger }) {
     const normalizeTaskName = (name) => {
       name = name.toLowerCase();
       
-      // Remove trailing 's' for plurals
-      if (name.endsWith('s')) {
-        name = name.slice(0, -1);
-      }
-
       // Common word mappings
       const wordMappings = {
         'dev': 'development',
@@ -356,6 +361,7 @@ function TimeEntry({ refreshTrigger }) {
         'implement': 'implementation',
         'review': 'code review',
         'meet': 'meeting',
+        'call': 'calls',
       };
 
       // Replace words based on mappings
@@ -386,6 +392,67 @@ function TimeEntry({ refreshTrigger }) {
       .sort((a, b) => b.hours - a.hours);
 
     setTaskHours(sortedTasks);
+  };
+
+  const fetchTimeDistribution = async () => {
+    const { data: timeEntries, error: timeError } = await supabase
+      .from('time_entries')
+      .select('start_time, duration');
+
+    if (timeError) {
+      console.error('Error fetching time distribution:', timeError);
+      return;
+    }
+
+    // Initialize hours array (24 hours)
+    const hourlyDistribution = Array(24).fill(0);
+
+    // Calculate hours worked in each hour of the day
+    timeEntries.forEach(entry => {
+      if (entry.start_time) {
+        const hour = parseInt(entry.start_time.split(':')[0]);
+        hourlyDistribution[hour] += Number(entry.duration || 0);
+      }
+    });
+
+    // Convert to array of objects with hour labels
+    const distribution = hourlyDistribution.map((hours, index) => ({
+      hour: `${index.toString().padStart(2, '0')}:00`,
+      hours: Number(hours.toFixed(2))
+    }));
+
+    setTimeDistribution(distribution);
+  };
+
+  const fetchDayDistribution = async () => {
+    const { data: timeEntries, error: timeError } = await supabase
+      .from('time_entries')
+      .select('work_date, duration');
+
+    if (timeError) {
+      console.error('Error fetching day distribution:', timeError);
+      return;
+    }
+
+    // Initialize days array
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayTotals = days.reduce((acc, day) => ({ ...acc, [day]: 0 }), {});
+
+    // Calculate hours worked on each day
+    timeEntries.forEach(entry => {
+      if (entry.work_date) {
+        const dayName = days[new Date(entry.work_date).getDay()];
+        dayTotals[dayName] += Number(entry.duration || 0);
+      }
+    });
+
+    // Convert to array and format numbers
+    const distribution = days.map(day => ({
+      day,
+      hours: Number(dayTotals[day].toFixed(2))
+    }));
+
+    setDayDistribution(distribution);
   };
 
   const chartData = {
@@ -486,6 +553,106 @@ function TimeEntry({ refreshTrigger }) {
     }
   };
 
+  const timeDistributionData = {
+    labels: timeDistribution.map(t => t.hour),
+    datasets: [
+      {
+        label: 'Hours',
+        data: timeDistribution.map(t => t.hours),
+        backgroundColor: '#50C878',  // Different color from other charts
+        borderRadius: 6,
+      }
+    ]
+  };
+
+  const timeDistributionOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      },
+      title: {
+        display: true,
+        text: 'Work Hours Distribution',
+        color: '#ffffff',
+        font: {
+          size: 16
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        },
+        ticks: {
+          color: '#ffffff'
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: '#ffffff',
+          maxRotation: 45,
+          minRotation: 45
+        }
+      }
+    }
+  };
+
+  const dayDistributionData = {
+    labels: dayDistribution.map(d => d.day.slice(0, 3)), // Use 3-letter day names
+    datasets: [
+      {
+        label: 'Hours',
+        data: dayDistribution.map(d => d.hours),
+        backgroundColor: '#9370DB',  // Different color (purple)
+        borderRadius: 6,
+      }
+    ]
+  };
+
+  const dayDistributionOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      },
+      title: {
+        display: true,
+        text: 'Hours by Day of Week',
+        color: '#ffffff',
+        font: {
+          size: 16
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        },
+        ticks: {
+          color: '#ffffff'
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: '#ffffff'
+        }
+      }
+    }
+  };
+
   return (
     <div className="dashboard">
       {/* Add metrics cards at the top */}
@@ -508,13 +675,23 @@ function TimeEntry({ refreshTrigger }) {
         </div>
       </div>
 
-      {/* Charts row */}
+      {/* Project and Task charts row */}
       <div className="charts-row">
         <div className="chart-container">
           <Bar data={chartData} options={chartOptions} />
         </div>
         <div className="chart-container">
           <Bar data={taskChartData} options={taskChartOptions} />
+        </div>
+      </div>
+
+      {/* Time and Day distribution charts row */}
+      <div className="charts-row">
+        <div className="chart-container">
+          <Bar data={timeDistributionData} options={timeDistributionOptions} />
+        </div>
+        <div className="chart-container">
+          <Bar data={dayDistributionData} options={dayDistributionOptions} />
         </div>
       </div>
 
