@@ -1,8 +1,31 @@
 import React, { useState } from 'react'
+import TimeEntry from './components/TimeEntry'
 import './styles/Dashboard.css'
 
 function App() {
   const [isNavOpen, setIsNavOpen] = useState(true);
+  const [currentPage, setCurrentPage] = useState('dashboard');
+
+  const renderPage = () => {
+    switch(currentPage) {
+      case 'timeEntry':
+        return <TimeEntry />;
+      default:
+        return (
+          <div className="dashboard">
+            <div className="top-stats">
+              <div className="stat-card">
+                <span className="stat-label">Today's Money</span>
+                <div className="stat-value">
+                  <span>$53,000</span>
+                  <span className="trend positive">+55%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+    }
+  };
 
   return (
     <div className="app-container">
@@ -12,7 +35,11 @@ function App() {
         </div>
         
         <div className="nav-links">
-          <a href="#" className="nav-item active">
+          <a 
+            href="#" 
+            className={`nav-item ${currentPage === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('dashboard')}
+          >
             <span className="nav-icon">📊</span>
             <span className="nav-text">Dashboard</span>
           </a>
@@ -20,7 +47,11 @@ function App() {
             <span className="nav-icon">💰</span>
             <span className="nav-text">Finances</span>
           </a>
-          <a href="#" className="nav-item">
+          <a 
+            href="#" 
+            className={`nav-item ${currentPage === 'timeEntry' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('timeEntry')}
+          >
             <span className="nav-icon">⏱️</span>
             <span className="nav-text">Time Entry</span>
           </a>
@@ -52,17 +83,7 @@ function App() {
           {isNavOpen ? '◀' : '▶'}
         </button>
         
-        <div className="dashboard">
-          <div className="top-stats">
-            <div className="stat-card">
-              <span className="stat-label">Today's Money</span>
-              <div className="stat-value">
-                <span>$53,000</span>
-                <span className="trend positive">+55%</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {renderPage()}
       </main>
     </div>
   );
