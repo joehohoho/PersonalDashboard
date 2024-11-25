@@ -334,18 +334,55 @@ function TimeEntry({ refreshTrigger }) {
       return;
     }
 
+    // Helper function to normalize task names
+    const normalizeTaskName = (name) => {
+      name = name.toLowerCase();
+      
+      // Remove trailing 's' for plurals
+      if (name.endsWith('s')) {
+        name = name.slice(0, -1);
+      }
+
+      // Common word mappings
+      const wordMappings = {
+        'dev': 'development',
+        'develop': 'development',
+        'setup': 'setup',
+        'config': 'configuration',
+        'configure': 'configuration',
+        'test': 'testing',
+        'debug': 'debugging',
+        'fix': 'bugfix',
+        'implement': 'implementation',
+        'review': 'code review',
+        'meet': 'meeting',
+      };
+
+      // Replace words based on mappings
+      for (const [key, value] of Object.entries(wordMappings)) {
+        if (name.includes(key)) {
+          name = value;
+        }
+      }
+
+      return name;
+    };
+
     // Group tasks and calculate hours
     const taskTotals = timeEntries.reduce((acc, entry) => {
-      const taskName = entry.tasks?.name?.toLowerCase() || '';
-      // Group dev-related tasks together
-      const category = taskName.includes('dev') ? 'Development' : taskName;
-      acc[category] = (acc[category] || 0) + Number(entry.duration);
+      const taskName = entry.tasks?.name || '';
+      const normalizedName = normalizeTaskName(taskName);
+      
+      acc[normalizedName] = (acc[normalizedName] || 0) + Number(entry.duration);
       return acc;
     }, {});
 
     // Convert to array and sort by hours
     const sortedTasks = Object.entries(taskTotals)
-      .map(([name, hours]) => ({ name, hours }))
+      .map(([name, hours]) => ({ 
+        name: name.charAt(0).toUpperCase() + name.slice(1), // Capitalize first letter
+        hours 
+      }))
       .sort((a, b) => b.hours - a.hours);
 
     setTaskHours(sortedTasks);
