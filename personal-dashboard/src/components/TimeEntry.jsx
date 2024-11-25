@@ -8,7 +8,10 @@ function TimeEntry() {
   const [timeEntry, setTimeEntry] = useState({
     task_id: '',
     duration: '',
-    description: ''
+    description: '',
+    start_time: '',
+    end_time: '',
+    work_date: new Date().toISOString().split('T')[0]
   });
   const [newProject, setNewProject] = useState({
     name: '',
@@ -19,6 +22,8 @@ function TimeEntry() {
     description: '',
     project_id: ''
   });
+  const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
+  const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -93,9 +98,19 @@ function TimeEntry() {
 
   async function handleTimeEntry(e) {
     e.preventDefault();
+    
+    const entryData = {
+      task_id: timeEntry.task_id,
+      duration: timeEntry.duration,
+      description: timeEntry.description,
+      start_time: timeEntry.start_time || null,
+      end_time: timeEntry.end_time || null,
+      work_date: timeEntry.work_date
+    };
+
     const { data, error } = await supabase
       .from('time_entries')
-      .insert([timeEntry])
+      .insert([entryData])
       .select();
 
     if (error) {
@@ -104,10 +119,41 @@ function TimeEntry() {
       setTimeEntry({
         task_id: '',
         duration: '',
-        description: ''
+        description: '',
+        start_time: '',
+        end_time: '',
+        work_date: new Date().toISOString().split('T')[0]
       });
     }
   }
+
+  const calculateDuration = (start, end) => {
+    if (!start || !end) return;
+
+    const startTime = new Date(`1970-01-01T${start}`);
+    const endTime = new Date(`1970-01-01T${end}`);
+    
+    // Calculate difference in hours
+    const diffInHours = (endTime - startTime) / (1000 * 60 * 60);
+    
+    // Round to nearest 0.25 (15 minutes)
+    return Math.round(diffInHours * 4) / 4;
+  };
+
+  const handleTimeChange = (e) => {
+    const { name, value } = e.target;
+    const newTimeEntry = { ...timeEntry, [name]: value };
+
+    // If both times are set, calculate duration
+    if (name === 'start_time' || name === 'end_time') {
+      if (newTimeEntry.start_time && newTimeEntry.end_time) {
+        const duration = calculateDuration(newTimeEntry.start_time, newTimeEntry.end_time);
+        newTimeEntry.duration = duration;
+      }
+    }
+
+    setTimeEntry(newTimeEntry);
+  };
 
   return (
     <div className="dashboard">
@@ -115,65 +161,79 @@ function TimeEntry() {
       <div className="management-grid">
         {/* Project Creation Card */}
         <div className="entry-card">
-          <h2>Create New Project</h2>
-          <form onSubmit={handleCreateProject} className="entry-form">
-            <div className="form-group">
-              <label>Project Name</label>
-              <input
-                type="text"
-                value={newProject.name}
-                onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Description</label>
-              <textarea
-                value={newProject.description}
-                onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-              />
-            </div>
-            <button type="submit" className="submit-btn">Create Project</button>
-          </form>
+          <div className="card-header" onClick={() => setIsProjectFormOpen(!isProjectFormOpen)}>
+            <h2>Create New Project</h2>
+            <button className="collapse-btn">
+              {isProjectFormOpen ? '▼' : '▶'}
+            </button>
+          </div>
+          {isProjectFormOpen && (
+            <form onSubmit={handleCreateProject} className="entry-form">
+              <div className="form-group">
+                <label>Project Name</label>
+                <input
+                  type="text"
+                  value={newProject.name}
+                  onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={newProject.description}
+                  onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                />
+              </div>
+              <button type="submit" className="submit-btn">Create Project</button>
+            </form>
+          )}
         </div>
 
         {/* Task Creation Card */}
         <div className="entry-card">
-          <h2>Create New Task</h2>
-          <form onSubmit={handleCreateTask} className="entry-form">
-            <div className="form-group">
-              <label>Project</label>
-              <select
-                value={newTask.project_id}
-                onChange={(e) => setNewTask({ ...newTask, project_id: e.target.value })}
-                required
-              >
-                <option value="">Select Project</option>
-                {projects.map(project => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Task Name</label>
-              <input
-                type="text"
-                value={newTask.name}
-                onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Description</label>
-              <textarea
-                value={newTask.description}
-                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-              />
-            </div>
-            <button type="submit" className="submit-btn">Create Task</button>
-          </form>
+          <div className="card-header" onClick={() => setIsTaskFormOpen(!isTaskFormOpen)}>
+            <h2>Create New Task</h2>
+            <button className="collapse-btn">
+              {isTaskFormOpen ? '▼' : '▶'}
+            </button>
+          </div>
+          {isTaskFormOpen && (
+            <form onSubmit={handleCreateTask} className="entry-form">
+              <div className="form-group">
+                <label>Project</label>
+                <select
+                  value={newTask.project_id}
+                  onChange={(e) => setNewTask({ ...newTask, project_id: e.target.value })}
+                  required
+                >
+                  <option value="">Select Project</option>
+                  {projects.map(project => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Task Name</label>
+                <input
+                  type="text"
+                  value={newTask.name}
+                  onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={newTask.description}
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                />
+              </div>
+              <button type="submit" className="submit-btn">Create Task</button>
+            </form>
+          )}
         </div>
       </div>
 
@@ -182,6 +242,18 @@ function TimeEntry() {
         <div className="entry-card">
           <h2>Add Time Entry</h2>
           <form onSubmit={handleTimeEntry} className="entry-form">
+            <div className="form-group">
+              <label>Date Worked</label>
+              <input
+                type="date"
+                name="work_date"
+                value={timeEntry.work_date}
+                onChange={(e) => setTimeEntry({ ...timeEntry, work_date: e.target.value })}
+                required
+                max={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
             <div className="form-group">
               <label>Project</label>
               <select
@@ -214,15 +286,42 @@ function TimeEntry() {
               </select>
             </div>
             
+            <div className="time-inputs">
+              <div className="form-group">
+                <label>Start Time</label>
+                <input
+                  type="time"
+                  name="start_time"
+                  value={timeEntry.start_time}
+                  onChange={handleTimeChange}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>End Time</label>
+                <input
+                  type="time"
+                  name="end_time"
+                  value={timeEntry.end_time}
+                  onChange={handleTimeChange}
+                />
+              </div>
+            </div>
+            
             <div className="form-group">
               <label>Duration (hours)</label>
               <input
                 type="number"
-                step="0.5"
+                step="0.25"
                 value={timeEntry.duration}
                 onChange={(e) => setTimeEntry({ ...timeEntry, duration: e.target.value })}
                 required
               />
+              {timeEntry.start_time && timeEntry.end_time && (
+                <small className="help-text">
+                  Calculated from start and end time
+                </small>
+              )}
             </div>
 
             <div className="form-group">
