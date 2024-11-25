@@ -190,7 +190,13 @@ function TimeEntriesTable({ refreshTrigger }) {
               >
                 <option value="">All Projects</option>
                 {projects.map(project => (
-                  <option key={project.id} value={project.id}>{project.name}</option>
+                  <option 
+                    key={project.id} 
+                    value={project.id}
+                    disabled={project.status === 'closed'}
+                  >
+                    {project.name} {project.status === 'closed' ? '(Closed)' : ''}
+                  </option>
                 ))}
               </select>
             </div>

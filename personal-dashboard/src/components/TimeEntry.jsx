@@ -4,7 +4,7 @@ import TimeEntriesTable from './TimeEntriesTable';
 import ProjectTaskManager from './ProjectTaskManager';
 import '../styles/TimeEntry.css';
 
-function TimeEntry() {
+function TimeEntry({ refreshTrigger }) {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [selectedProject, setSelectedProject] = useState('');
@@ -31,27 +31,37 @@ function TimeEntry() {
   const [timeEntryUpdates, setTimeEntryUpdates] = useState(0);
 
   useEffect(() => {
+    console.log('TimeEntry refreshTrigger changed:', refreshTrigger);
     fetchProjects();
-  }, []);
+  }, [refreshTrigger]);
 
-  useEffect(() => {
-    if (selectedProject) {
-      fetchTasks(selectedProject);
-    }
-  }, [selectedProject]);
-
-  async function fetchProjects() {
+  const fetchProjects = async () => {
+    console.log('Fetching open projects for TimeEntry...');
     const { data, error } = await supabase
       .from('projects')
-      .select('*')
+      .select('id, name, status')
+      .eq('status', 'open')
       .order('name');
 
     if (error) {
       console.error('Error fetching projects:', error);
     } else {
+      console.log('Received projects:', data);
       setProjects(data);
+      
+      if (timeEntry.project_id) {
+        const projectStillOpen = data.some(p => p.id === timeEntry.project_id);
+        if (!projectStillOpen) {
+          console.log('Resetting selected project as it is now closed');
+          setTimeEntry(prev => ({
+            ...prev,
+            project_id: '',
+            task_id: ''
+          }));
+        }
+      }
     }
-  }
+  };
 
   async function fetchTasks(projectId) {
     const { data, error } = await supabase
@@ -161,6 +171,41 @@ function TimeEntry() {
     setTimeEntry(newTimeEntry);
   };
 
+  const handleProjectChange = (e) => {
+    const projectId = e.target.value;
+    setTimeEntry(prev => ({
+      ...prev,
+      project_id: projectId,
+      task_id: '' // Reset task when project changes
+    }));
+
+    if (projectId) {
+      fetchTasks(projectId);
+    } else {
+      setTasks([]); // Clear tasks if no project selected
+    }
+  };
+
+  const fetchOpenProjects = async () => {
+    console.log('Fetching open projects on dropdown click');
+    const { data, error } = await supabase
+      .from('projects')
+      .select('id, name, status')
+      .eq('status', 'open')
+      .order('name');
+
+    if (error) {
+      console.error('Error fetching projects:', error);
+    } else {
+      console.log('Received open projects:', data);
+      setProjects(data);
+    }
+  };
+
+  const handleProjectSelectClick = () => {
+    fetchOpenProjects();
+  };
+
   return (
     <div className="dashboard">
       {/* Time Entry Card */}
@@ -189,8 +234,10 @@ function TimeEntry() {
               <div className="form-group">
                 <label>Project</label>
                 <select
-                  value={selectedProject}
-                  onChange={(e) => setSelectedProject(e.target.value)}
+                  value={timeEntry.project_id}
+                  onChange={handleProjectChange}
+                  onClick={handleProjectSelectClick}
+                  onFocus={handleProjectSelectClick}
                   required
                 >
                   <option value="">Select Project</option>

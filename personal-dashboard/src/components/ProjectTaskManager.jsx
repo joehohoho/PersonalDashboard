@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
 
-function ProjectTaskManager() {
+function ProjectTaskManager({ refreshTrigger, onUpdate = () => {} }) {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [editingProject, setEditingProject] = useState(null);
+  const [isEditingProject, setIsEditingProject] = useState(false);
+  const [editingProject, setEditingProject] = useState({
+    id: null,
+    name: '',
+    description: '',
+    status: 'open'
+  });
   const [editingTask, setEditingTask] = useState(null);
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [isTasksOpen, setIsTasksOpen] = useState(false);
@@ -47,23 +53,43 @@ function ProjectTaskManager() {
     }
   }
 
-  async function handleUpdateProject(e) {
+  const handleEditProject = (project) => {
+    setEditingProject({
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      status: project.status || 'open'
+    });
+    setIsEditingProject(true);
+  };
+
+  const handleUpdateProject = async (e) => {
     e.preventDefault();
-    const { error } = await supabase
+    console.log('Updating project:', editingProject);
+
+    const { data, error } = await supabase
       .from('projects')
       .update({
         name: editingProject.name,
-        description: editingProject.description
+        description: editingProject.description,
+        status: editingProject.status
       })
-      .eq('id', editingProject.id);
+      .eq('id', editingProject.id)
+      .select();
 
     if (error) {
       console.error('Error updating project:', error);
     } else {
-      setEditingProject(null);
-      fetchProjects();
+      console.log('Project updated successfully');
+      setIsEditingProject(false);
+      setEditingProject({ id: null, name: '', description: '', status: 'open' });
+      await fetchProjects();
+      if (typeof onUpdate === 'function') {
+        console.log('Triggering global refresh');
+        onUpdate();
+      }
     }
-  }
+  };
 
   async function handleUpdateTask(e) {
     e.preventDefault();
@@ -96,7 +122,7 @@ function ProjectTaskManager() {
         {isProjectsOpen && (
           <div className="projects-list">
             {projects.map(project => (
-              <div key={project.id} className="list-item">
+              <div key={project.id} className={`list-item ${project.status === 'closed' ? 'closed' : ''}`}>
                 {editingProject?.id === project.id ? (
                   <form onSubmit={handleUpdateProject} className="edit-form">
                     <div className="form-group">
@@ -119,6 +145,19 @@ function ProjectTaskManager() {
                         })}
                       />
                     </div>
+                    <div className="form-group">
+                      <label>Status</label>
+                      <select
+                        value={editingProject.status}
+                        onChange={(e) => setEditingProject({
+                          ...editingProject,
+                          status: e.target.value
+                        })}
+                      >
+                        <option value="open">Open</option>
+                        <option value="closed">Closed</option>
+                      </select>
+                    </div>
                     <div className="button-group">
                       <button type="submit" className="submit-btn">Save</button>
                       <button 
@@ -135,6 +174,7 @@ function ProjectTaskManager() {
                     <div>
                       <h3>{project.name}</h3>
                       <p>{project.description}</p>
+                      <span className="status-badge">{project.status}</span>
                     </div>
                     <div className="list-item-actions">
                       <button 
