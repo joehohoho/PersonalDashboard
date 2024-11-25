@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
 import TimeEntriesTable from './TimeEntriesTable';
+import ProjectTaskManager from './ProjectTaskManager';
+import '../styles/TimeEntry.css';
 
 function TimeEntry() {
   const [projects, setProjects] = useState([]);
@@ -26,6 +28,7 @@ function TimeEntry() {
   const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
   const [isTimeEntryFormOpen, setIsTimeEntryFormOpen] = useState(true);
+  const [timeEntryUpdates, setTimeEntryUpdates] = useState(0);
 
   useEffect(() => {
     fetchProjects();
@@ -126,6 +129,7 @@ function TimeEntry() {
         end_time: '',
         work_date: new Date().toISOString().split('T')[0]
       });
+      setTimeEntryUpdates(prev => prev + 1);
     }
   }
 
@@ -159,87 +163,7 @@ function TimeEntry() {
 
   return (
     <div className="dashboard">
-      {/* Management section - Two cards side by side */}
-      <div className="management-grid">
-        {/* Project Creation Card */}
-        <div className="entry-card">
-          <div className="card-header" onClick={() => setIsProjectFormOpen(!isProjectFormOpen)}>
-            <h2>Create New Project</h2>
-            <button className="collapse-btn">
-              {isProjectFormOpen ? '▼' : '▶'}
-            </button>
-          </div>
-          {isProjectFormOpen && (
-            <form onSubmit={handleCreateProject} className="entry-form">
-              <div className="form-group">
-                <label>Project Name</label>
-                <input
-                  type="text"
-                  value={newProject.name}
-                  onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Description</label>
-                <textarea
-                  value={newProject.description}
-                  onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                />
-              </div>
-              <button type="submit" className="submit-btn">Create Project</button>
-            </form>
-          )}
-        </div>
-
-        {/* Task Creation Card */}
-        <div className="entry-card">
-          <div className="card-header" onClick={() => setIsTaskFormOpen(!isTaskFormOpen)}>
-            <h2>Create New Task</h2>
-            <button className="collapse-btn">
-              {isTaskFormOpen ? '▼' : '▶'}
-            </button>
-          </div>
-          {isTaskFormOpen && (
-            <form onSubmit={handleCreateTask} className="entry-form">
-              <div className="form-group">
-                <label>Project</label>
-                <select
-                  value={newTask.project_id}
-                  onChange={(e) => setNewTask({ ...newTask, project_id: e.target.value })}
-                  required
-                >
-                  <option value="">Select Project</option>
-                  {projects.map(project => (
-                    <option key={project.id} value={project.id}>
-                      {project.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Task Name</label>
-                <input
-                  type="text"
-                  value={newTask.name}
-                  onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Description</label>
-                <textarea
-                  value={newTask.description}
-                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                />
-              </div>
-              <button type="submit" className="submit-btn">Create Task</button>
-            </form>
-          )}
-        </div>
-      </div>
-
-      {/* Time Entry section - Single card */}
+      {/* Time Entry Card */}
       <div className="time-entry-grid">
         <div className="entry-card">
           <div className="card-header" onClick={() => setIsTimeEntryFormOpen(!isTimeEntryFormOpen)}>
@@ -248,7 +172,6 @@ function TimeEntry() {
               {isTimeEntryFormOpen ? '▼' : '▶'}
             </button>
           </div>
-          
           {isTimeEntryFormOpen && (
             <form onSubmit={handleTimeEntry} className="entry-form">
               <div className="form-group">
@@ -347,8 +270,91 @@ function TimeEntry() {
         </div>
       </div>
 
-      {/* Add the time entries table */}
-      <TimeEntriesTable />
+      {/* Time Entries Table */}
+      <TimeEntriesTable refreshTrigger={timeEntryUpdates} />
+
+      {/* Creation Cards */}
+      <div className="management-grid">
+        {/* Project Creation Card */}
+        <div className="entry-card">
+          <div className="card-header" onClick={() => setIsProjectFormOpen(!isProjectFormOpen)}>
+            <h2>Create New Project</h2>
+            <button className="collapse-btn">
+              {isProjectFormOpen ? '▼' : '▶'}
+            </button>
+          </div>
+          {isProjectFormOpen && (
+            <form onSubmit={handleCreateProject} className="entry-form">
+              <div className="form-group">
+                <label>Project Name</label>
+                <input
+                  type="text"
+                  value={newProject.name}
+                  onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={newProject.description}
+                  onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                />
+              </div>
+              <button type="submit" className="submit-btn">Create Project</button>
+            </form>
+          )}
+        </div>
+
+        {/* Task Creation Card */}
+        <div className="entry-card">
+          <div className="card-header" onClick={() => setIsTaskFormOpen(!isTaskFormOpen)}>
+            <h2>Create New Task</h2>
+            <button className="collapse-btn">
+              {isTaskFormOpen ? '▼' : '▶'}
+            </button>
+          </div>
+          {isTaskFormOpen && (
+            <form onSubmit={handleCreateTask} className="entry-form">
+              <div className="form-group">
+                <label>Project</label>
+                <select
+                  value={newTask.project_id}
+                  onChange={(e) => setNewTask({ ...newTask, project_id: e.target.value })}
+                  required
+                >
+                  <option value="">Select Project</option>
+                  {projects.map(project => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Task Name</label>
+                <input
+                  type="text"
+                  value={newTask.name}
+                  onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={newTask.description}
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                />
+              </div>
+              <button type="submit" className="submit-btn">Create Task</button>
+            </form>
+          )}
+        </div>
+      </div>
+
+      {/* Project/Task Manager */}
+      <ProjectTaskManager />
     </div>
   );
 }

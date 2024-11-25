@@ -1,0 +1,27 @@
+.entry-form .form-group input[type="date"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.time-inputs {
+  display: flex;
+  gap: 1rem;
+}
+
+.time-inputs .form-group {
+  flex: 1;
+  max-width: calc(50% - 0.5rem); /* Accounts for the gap between inputs */
+}
+
+.time-inputs input[type="time"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-family: inherit;
+  box-sizing: border-box;
+} 
