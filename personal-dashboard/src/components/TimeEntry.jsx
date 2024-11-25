@@ -60,30 +60,53 @@ function TimeEntry({ refreshTrigger }) {
   const [timeDistribution, setTimeDistribution] = useState([]);
   const [dayDistribution, setDayDistribution] = useState([]);
 
-  useEffect(() => {
-    console.log('TimeEntry refreshTrigger changed:', refreshTrigger);
-    fetchProjects();
-  }, [refreshTrigger]);
+  const fetchTimeMetrics = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
+
+    const { data, error } = await supabase
+      .from('time_entries')
+      .select('duration, work_date');
+
+    if (error) {
+      console.error('Error fetching time metrics:', error);
+      return;
+    }
+
+    const totals = {
+      today: data
+        .filter(entry => entry.work_date === today)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
+      week: data
+        .filter(entry => new Date(entry.work_date) >= weekStart)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
+      month: data
+        .filter(entry => new Date(entry.work_date) >= monthStart)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
+      year: data
+        .filter(entry => entry.work_date >= yearStart)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0)
+    };
+
+    setMetrics(totals);
+  };
 
   useEffect(() => {
-    calculateMetrics();
-  }, [timeEntryUpdates]);
+    const fetchAllData = async () => {
+      await Promise.all([
+        fetchTimeMetrics(),
+        fetchProjectHours(),
+        fetchTaskHours(),
+        fetchTimeDistribution(),
+        fetchDayDistribution()
+      ]);
+    };
 
-  useEffect(() => {
-    fetchProjectHours();
-  }, [timeEntryUpdates]);
-
-  useEffect(() => {
-    fetchTaskHours();
-  }, [timeEntryUpdates]);
-
-  useEffect(() => {
-    fetchTimeDistribution();
-  }, [timeEntryUpdates]);
-
-  useEffect(() => {
-    fetchDayDistribution();
-  }, [timeEntryUpdates]);
+    fetchAllData();
+  }, [timeEntryUpdates, refreshTrigger]);
 
   const fetchProjects = async () => {
     console.log('Fetching open projects for TimeEntry...');
@@ -653,45 +676,93 @@ function TimeEntry({ refreshTrigger }) {
     }
   };
 
+  // Add helper function to get current year
+  const getCurrentYear = () => {
+    return new Date().getFullYear();
+  };
+
+  // Add helper function to get days elapsed in current week
+  const getWeekProgress = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 (Sunday) through 6 (Saturday)
+    return dayOfWeek + 1; // Add 1 to show human-readable count (1-7)
+  };
+
   return (
     <div className="dashboard">
       {/* Add metrics cards at the top */}
       <div className="metrics-row">
         <div className="metric-card">
           <h3>Today</h3>
-          <p>{metrics.today.toFixed(2)}</p>
+          <p>{(metrics.today || 0).toFixed(2)}</p>
         </div>
         <div className="metric-card">
-          <h3>This Week</h3>
-          <p>{metrics.week.toFixed(2)}</p>
+          <h3>This Week ({getWeekProgress()} of 7)</h3>
+          <p>{(metrics.week || 0).toFixed(2)}</p>
         </div>
         <div className="metric-card">
           <h3>This Month ({getCurrentMonthAbbr()})</h3>
-          <p>{metrics.month.toFixed(2)}</p>
+          <p>{(metrics.month || 0).toFixed(2)}</p>
         </div>
         <div className="metric-card">
-          <h3>This Year</h3>
-          <p>{metrics.year.toFixed(2)}</p>
+          <h3>This Year ({getCurrentYear()})</h3>
+          <p>{(metrics.year || 0).toFixed(2)}</p>
         </div>
       </div>
 
       {/* Project and Task charts row */}
       <div className="charts-row">
         <div className="chart-container">
-          <Bar data={chartData} options={chartOptions} />
+          <Bar 
+            data={{
+              ...chartData,
+              datasets: [{
+                ...chartData?.datasets?.[0],
+                data: projectHours.map(p => p.hours || 0)
+              }]
+            }} 
+            options={chartOptions} 
+          />
         </div>
         <div className="chart-container">
-          <Bar data={taskChartData} options={taskChartOptions} />
+          <Bar 
+            data={{
+              ...taskChartData,
+              datasets: [{
+                ...taskChartData?.datasets?.[0],
+                data: taskHours.map(t => t.hours || 0)
+              }]
+            }} 
+            options={taskChartOptions} 
+          />
         </div>
       </div>
 
       {/* Time and Day distribution charts row */}
       <div className="charts-row">
         <div className="chart-container">
-          <Bar data={timeDistributionData} options={timeDistributionOptions} />
+          <Bar 
+            data={{
+              ...timeDistributionData,
+              datasets: [{
+                ...timeDistributionData?.datasets?.[0],
+                data: timeDistribution.map(t => t.hours || 0)
+              }]
+            }} 
+            options={timeDistributionOptions} 
+          />
         </div>
         <div className="chart-container">
-          <Bar data={dayDistributionData} options={dayDistributionOptions} />
+          <Bar 
+            data={{
+              ...dayDistributionData,
+              datasets: [{
+                ...dayDistributionData?.datasets?.[0],
+                data: dayDistribution.map(d => d.hours || 0)
+              }]
+            }} 
+            options={dayDistributionOptions} 
+          />
         </div>
       </div>
 
