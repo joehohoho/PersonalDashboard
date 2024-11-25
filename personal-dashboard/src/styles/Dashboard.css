@@ -124,6 +124,9 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .top-stats {
@@ -234,9 +237,10 @@ body {
 
 .time-entry-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(300px, 500px);
   gap: 20px;
   padding-left: 20px;
+  margin-bottom: 20px;
 }
 
 .entry-card {
@@ -333,7 +337,7 @@ body {
 
 .management-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(300px, 400px));
   gap: 20px;
   padding-left: 20px;
   margin-bottom: 20px;
@@ -347,10 +351,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 12px;
+  padding-bottom: 15px;
   cursor: pointer;
   user-select: none;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 .card-header h2 {
@@ -421,24 +424,105 @@ input[type="time"] {
   width: 100%;
 }
 
-/* Add styles for date input */
+/* Update date input styles */
 input[type="date"] {
   background: var(--bg-dark);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 8px;
-  padding: 10px;
+  padding: 6px 8px;
   color: var(--text-primary);
-  font-size: 1rem;
-  width: 100%;
+  font-size: 0.9rem;
+  width: 140px; /* Fixed, compact width */
+  min-width: unset; /* Remove minimum width */
 }
 
 /* Style the date picker calendar icon */
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1); /* Makes the calendar icon white */
-  opacity: 0.5;
+  filter: invert(1);
+  opacity: 0.7;
   cursor: pointer;
+  padding: 0 2px; /* Reduced padding further */
+  width: 12px; /* Smaller icon */
+  height: 12px; /* Smaller icon */
+  margin-left: 2px; /* Reduce space before icon */
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator:hover {
-  opacity: 0.8;
+  opacity: 1;
+}
+
+/* For Firefox */
+input[type="date"] {
+  color-scheme: dark;
+}
+
+/* Time Entries Table Styles */
+.time-entries-table {
+  margin: 20px;
+  padding: 20px;
+  background: var(--card-bg);
+  border-radius: 20px;
+}
+
+.table-filters {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-group label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+th {
+  color: var(--text-secondary);
+  font-weight: normal;
+  font-size: 0.9rem;
+}
+
+td input {
+  background: var(--bg-dark);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+td button {
+  background: var(--accent-blue);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-right: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+td button:last-child {
+  background: var(--text-secondary);
+}
+
+td button:hover {
+  opacity: 0.9;
 }

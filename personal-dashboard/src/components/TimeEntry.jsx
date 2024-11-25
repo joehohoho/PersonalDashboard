@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
+import TimeEntriesTable from './TimeEntriesTable';
 
 function TimeEntry() {
   const [projects, setProjects] = useState([]);
@@ -24,6 +25,7 @@ function TimeEntry() {
   });
   const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
+  const [isTimeEntryFormOpen, setIsTimeEntryFormOpen] = useState(true);
 
   useEffect(() => {
     fetchProjects();
@@ -240,102 +242,113 @@ function TimeEntry() {
       {/* Time Entry section - Single card */}
       <div className="time-entry-grid">
         <div className="entry-card">
-          <h2>Add Time Entry</h2>
-          <form onSubmit={handleTimeEntry} className="entry-form">
-            <div className="form-group">
-              <label>Date Worked</label>
-              <input
-                type="date"
-                name="work_date"
-                value={timeEntry.work_date}
-                onChange={(e) => setTimeEntry({ ...timeEntry, work_date: e.target.value })}
-                required
-                max={new Date().toISOString().split('T')[0]}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Project</label>
-              <select
-                value={selectedProject}
-                onChange={(e) => setSelectedProject(e.target.value)}
-                required
-              >
-                <option value="">Select Project</option>
-                {projects.map(project => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label>Task</label>
-              <select
-                value={timeEntry.task_id}
-                onChange={(e) => setTimeEntry({ ...timeEntry, task_id: e.target.value })}
-                required
-              >
-                <option value="">Select Task</option>
-                {tasks.map(task => (
-                  <option key={task.id} value={task.id}>
-                    {task.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="time-inputs">
+          <div className="card-header" onClick={() => setIsTimeEntryFormOpen(!isTimeEntryFormOpen)}>
+            <h2>Add Time Entry</h2>
+            <button className="collapse-btn">
+              {isTimeEntryFormOpen ? '▼' : '▶'}
+            </button>
+          </div>
+          
+          {isTimeEntryFormOpen && (
+            <form onSubmit={handleTimeEntry} className="entry-form">
               <div className="form-group">
-                <label>Start Time</label>
+                <label>Date Worked</label>
                 <input
-                  type="time"
-                  name="start_time"
-                  value={timeEntry.start_time}
-                  onChange={handleTimeChange}
+                  type="date"
+                  name="work_date"
+                  value={timeEntry.work_date}
+                  onChange={(e) => setTimeEntry({ ...timeEntry, work_date: e.target.value })}
+                  required
+                  max={new Date().toISOString().split('T')[0]}
                 />
               </div>
 
               <div className="form-group">
-                <label>End Time</label>
+                <label>Project</label>
+                <select
+                  value={selectedProject}
+                  onChange={(e) => setSelectedProject(e.target.value)}
+                  required
+                >
+                  <option value="">Select Project</option>
+                  {projects.map(project => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Task</label>
+                <select
+                  value={timeEntry.task_id}
+                  onChange={(e) => setTimeEntry({ ...timeEntry, task_id: e.target.value })}
+                  required
+                >
+                  <option value="">Select Task</option>
+                  {tasks.map(task => (
+                    <option key={task.id} value={task.id}>
+                      {task.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="time-inputs">
+                <div className="form-group">
+                  <label>Start Time</label>
+                  <input
+                    type="time"
+                    name="start_time"
+                    value={timeEntry.start_time}
+                    onChange={handleTimeChange}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>End Time</label>
+                  <input
+                    type="time"
+                    name="end_time"
+                    value={timeEntry.end_time}
+                    onChange={handleTimeChange}
+                  />
+                </div>
+              </div>
+              
+              <div className="form-group">
+                <label>Duration (hours)</label>
                 <input
-                  type="time"
-                  name="end_time"
-                  value={timeEntry.end_time}
-                  onChange={handleTimeChange}
+                  type="number"
+                  step="0.25"
+                  value={timeEntry.duration}
+                  onChange={(e) => setTimeEntry({ ...timeEntry, duration: e.target.value })}
+                  required
+                />
+                {timeEntry.start_time && timeEntry.end_time && (
+                  <small className="help-text">
+                    Calculated from start and end time
+                  </small>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={timeEntry.description}
+                  onChange={(e) => setTimeEntry({ ...timeEntry, description: e.target.value })}
                 />
               </div>
-            </div>
-            
-            <div className="form-group">
-              <label>Duration (hours)</label>
-              <input
-                type="number"
-                step="0.25"
-                value={timeEntry.duration}
-                onChange={(e) => setTimeEntry({ ...timeEntry, duration: e.target.value })}
-                required
-              />
-              {timeEntry.start_time && timeEntry.end_time && (
-                <small className="help-text">
-                  Calculated from start and end time
-                </small>
-              )}
-            </div>
 
-            <div className="form-group">
-              <label>Description</label>
-              <textarea
-                value={timeEntry.description}
-                onChange={(e) => setTimeEntry({ ...timeEntry, description: e.target.value })}
-              />
-            </div>
-
-            <button type="submit" className="submit-btn">Add Entry</button>
-          </form>
+              <button type="submit" className="submit-btn">Add Entry</button>
+            </form>
+          )}
         </div>
       </div>
+
+      {/* Add the time entries table */}
+      <TimeEntriesTable />
     </div>
   );
 }
