@@ -1,0 +1,369 @@
+.job-tracking {
+  padding: 1rem;
+}
+
+.metrics-row {
+  display: flex;
+  gap: 1rem;
+  margin: 0.5rem 0 1rem 0;
+  padding: 0 1rem;
+}
+
+.metric-card {
+  flex: 1;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+}
+
+.metric-card h3 {
+  text-align: center;
+  margin: 0 0 0.3rem 0;
+  font-size: 0.9em;
+  color: #ffffff;
+}
+
+.metric-card p {
+  text-align: center;
+  margin: 0.3rem 0;
+  font-weight: bold;
+  font-size: 1.2em;
+  color: #ffffff;
+}
+
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin: 1rem;
+}
+
+.stats-card {
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+}
+
+.stats-card h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1em;
+  color: #ffffff;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.stat-item {
+  margin-bottom: 0.8rem;
+}
+
+.stat-item label {
+  display: block;
+  font-size: 0.8em;
+  color: #888;
+  margin-bottom: 0.2rem;
+}
+
+.stat-item p {
+  margin: 0;
+  font-size: 0.9em;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.trend {
+  margin-left: 0.5rem;
+  font-size: 0.8em;
+}
+
+.trend.positive {
+  color: #4caf50;
+}
+
+.trend.negative {
+  color: #f44336;
+}
+
+.positive {
+  color: #4caf50;
+}
+
+.negative {
+  color: #f44336;
+}
+
+.chart-container {
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  height: 300px; /* Fixed height for the chart */
+}
+
+/* Add hover effect */
+.chart-container:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* Add hover effect */
+.metric-card:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
+  box-shadow: var(--card-shadow-hover);
+}
+
+.add-application-section {
+  margin: 1rem;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+}
+
+.toggle-form-btn {
+  width: 100%;
+  padding: 1rem;
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1em;
+  cursor: pointer;
+  text-align: left;
+}
+
+.toggle-form-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.application-form {
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  flex: 1;
+}
+
+.form-group.full-width {
+  width: 100%;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+  font-size: 0.9em;
+}
+
+.form-group input[type="text"],
+.form-group input[type="url"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.salary-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.salary-input-group select {
+  width: 100px;
+}
+
+.checkboxes {
+  display: flex;
+  gap: 2rem;
+}
+
+.checkboxes label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.file-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.file-input-group input {
+  flex: 1;
+}
+
+.file-input-group button {
+  padding: 0.5rem 1rem;
+  background-color: #4caf50;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+}
+
+.file-input-group button:hover {
+  background-color: #45a049;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.submit-btn,
+.cancel-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submit-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.submit-btn:hover {
+  background-color: #45a049;
+}
+
+.cancel-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background-color: #da190b;
+}
+
+.applications-table-section {
+  margin: 1rem;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+}
+
+.table-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.filters {
+  display: flex;
+  gap: 1rem;
+}
+
+.filters select {
+  padding: 0.5rem;
+  border-radius: 4px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  border: 1px solid var(--border-color);
+}
+
+.import-export {
+  display: flex;
+  gap: 1rem;
+}
+
+.import-export button {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.import-export button:hover {
+  background-color: #45a049;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background-color: #1a1a1a;
+  padding: 1rem;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+}
+
+th:hover {
+  background-color: #333333;
+}
+
+td {
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+tr:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+td input,
+td select {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  border: 1px solid var(--border-color);
+}
+
+td button {
+  margin-right: 0.5rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  color: white;
+}
+
+td button:first-child {
+  background-color: #4caf50;
+}
+
+td button:first-child:hover {
+  background-color: #45a049;
+}
+
+td button:last-child {
+  background-color: #f44336;
+}
+
+td button:last-child:hover {
+  background-color: #da190b;
+} 

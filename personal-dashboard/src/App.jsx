@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import TimeEntry from './components/TimeEntry'
+import JobTracking from './components/JobTracking'
 import './styles/Dashboard.css'
 
 function App() {
@@ -10,6 +11,8 @@ function App() {
     switch(currentPage) {
       case 'timeEntry':
         return <TimeEntry />;
+      case 'jobTracking':
+        return <JobTracking />;
       default:
         return (
           <div className="dashboard">
@@ -55,7 +58,11 @@ function App() {
             <span className="nav-icon">⏱️</span>
             <span className="nav-text">Time Entry</span>
           </a>
-          <a href="#" className="nav-item">
+          <a 
+            href="#" 
+            className={`nav-item ${currentPage === 'jobTracking' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('jobTracking')}
+          >
             <span className="nav-icon">🎯</span>
             <span className="nav-text">Job Tracking</span>
           </a>
