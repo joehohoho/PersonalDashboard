@@ -1149,19 +1149,60 @@ function JobTracking() {
       monthlyDiff: lastMonthApps ? ((thisMonthApps - lastMonthApps) / lastMonthApps * 100) : 0
     });
 
-    // Calculate salary statistics
-    const salaries = data.filter(job => job.salary > 0);
-    const listedSalaries = salaries.filter(job => job.is_salary_listed);
+    // Calculate salary statistics with range handling
+    const parseSalaryValue = (salaryString) => {
+      if (!salaryString) return null;
+      
+      // Convert to string and clean up
+      const cleaned = salaryString.toString().replace(/[,$]/g, '').trim();
+      
+      // Check for range (e.g., "100000-120000" or "100000 - 120000")
+      const rangeMatch = cleaned.match(/(\d+)\s*[-–]\s*(\d+)/);
+      
+      if (rangeMatch) {
+        const min = parseFloat(rangeMatch[1]);
+        const max = parseFloat(rangeMatch[2]);
+        return (min + max) / 2; // Return average of range
+      }
+      
+      // Single number
+      const value = parseFloat(cleaned);
+      return isNaN(value) ? null : value;
+    };
+
+    const salaryData = data.reduce((acc, job) => {
+      const salaryValue = parseSalaryValue(job.salary);
+      
+      if (salaryValue !== null) {
+        // Total average calculations
+        acc.totalCount++;
+        acc.totalSum += salaryValue;
+
+        // Listed salary calculations
+        if (job.is_salary_listed) {
+          acc.listedCount++;
+          acc.listedSum += salaryValue;
+        }
+      }
+
+      return acc;
+    }, {
+      totalSum: 0,
+      totalCount: 0,
+      listedSum: 0,
+      listedCount: 0
+    });
+
+    const totalAvg = salaryData.totalCount > 0 ? 
+      Math.round(salaryData.totalSum / salaryData.totalCount) : 0;
     
-    const avgTotal = salaries.length ? 
-      salaries.reduce((sum, job) => sum + job.salary, 0) / salaries.length : 0;
-    const avgListed = listedSalaries.length ? 
-      listedSalaries.reduce((sum, job) => sum + job.salary, 0) / listedSalaries.length : 0;
+    const listedAvg = salaryData.listedCount > 0 ? 
+      Math.round(salaryData.listedSum / salaryData.listedCount) : 0;
 
     setSalaryStats({
-      totalAvg: avgTotal,
-      listedAvg: avgListed,
-      difference: avgListed - avgTotal
+      totalAvg: totalAvg,
+      listedAvg: listedAvg,
+      difference: listedAvg - totalAvg
     });
 
     // Calculate job characteristics
