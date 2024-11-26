@@ -422,7 +422,9 @@ function TimeEntry({ refreshTrigger }) {
   const fetchTimeDistribution = async () => {
     const { data: timeEntries, error: timeError } = await supabase
       .from('time_entries')
-      .select('start_time, duration');
+      .select('start_time, end_time, duration')
+      .not('start_time', 'is', null)
+      .not('end_time', 'is', null);
 
     if (timeError) {
       console.error('Error fetching time distribution:', timeError);
@@ -434,13 +436,32 @@ function TimeEntry({ refreshTrigger }) {
 
     // Calculate hours worked in each hour of the day
     timeEntries.forEach(entry => {
-      if (entry.start_time) {
-        const hour = parseInt(entry.start_time.split(':')[0]);
-        hourlyDistribution[hour] += Number(entry.duration || 0);
+      if (entry.start_time && entry.end_time) {
+        const startTime = new Date(`2000-01-01T${entry.start_time}`);
+        const endTime = new Date(`2000-01-01T${entry.end_time}`);
+        
+        // Handle entries that span midnight
+        if (endTime < startTime) {
+          endTime.setDate(endTime.getDate() + 1);
+        }
+
+        let currentTime = new Date(startTime);
+        while (currentTime < endTime) {
+          const hour = currentTime.getHours();
+          const nextHour = new Date(currentTime);
+          nextHour.setHours(hour + 1, 0, 0, 0);
+
+          // Calculate the portion of the hour worked
+          const slotEnd = endTime < nextHour ? endTime : nextHour;
+          const hoursWorked = (slotEnd - currentTime) / (1000 * 60 * 60);
+          
+          hourlyDistribution[hour] += hoursWorked;
+          currentTime = nextHour;
+        }
       }
     });
 
-    // Convert to array of objects with hour labels
+    // Convert to array of objects with formatted hour labels
     const distribution = hourlyDistribution.map((hours, index) => ({
       hour: `${index.toString().padStart(2, '0')}:00`,
       hours: Number(hours.toFixed(2))
@@ -636,9 +657,9 @@ function TimeEntry({ refreshTrigger }) {
     labels: timeDistribution.map(t => t.hour),
     datasets: [
       {
-        label: 'Hours',
+        label: 'Hours Worked',
         data: timeDistribution.map(t => t.hours),
-        backgroundColor: '#50C878',  // Different color from other charts
+        backgroundColor: '#50C878',
         borderRadius: 6,
       }
     ]
@@ -658,6 +679,11 @@ function TimeEntry({ refreshTrigger }) {
         font: {
           size: 16
         }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => `Hours: ${context.raw.toFixed(2)}`
+        }
       }
     },
     scales: {
@@ -667,7 +693,8 @@ function TimeEntry({ refreshTrigger }) {
           color: 'rgba(255, 255, 255, 0.1)'
         },
         ticks: {
-          color: '#ffffff'
+          color: '#ffffff',
+          callback: (value) => value.toFixed(1)
         }
       },
       x: {
@@ -842,25 +869,39 @@ function TimeEntry({ refreshTrigger }) {
         </div>
       </div>
 
-      {/* Project and Task charts row */}
+      {/* Project, Task, and Day Distribution charts row */}
       <div className="charts-row" style={{ marginBottom: '0.5rem' }}>
-        <div className="chart-container" style={{ marginRight: '1rem', height: '240px' }}>
+        <div className="chart-container" style={{ marginRight: '1rem', height: '240px', flex: 1 }}>
           <Bar data={chartData} options={chartOptions} />
         </div>
-        <div className="chart-container" style={{ height: '240px' }}>
+        <div className="chart-container" style={{ marginRight: '1rem', height: '240px', flex: 1 }}>
           <Bar data={taskChartData} options={taskChartOptions} />
+        </div>
+        <div className="chart-container" style={{ height: '240px', flex: 1 }}>
+          <Bar data={dayDistributionData} options={dayDistributionOptions} />
         </div>
       </div>
 
-      {/* Time and Day distribution charts row */}
-      <div className="charts-row" style={{ marginBottom: '.5rem' }}>
-        <div className="chart-container" style={{ marginRight: '1rem', height: '240px' }}>
+      {/* Time Distribution and Efficiency charts row */}
+      <div style={{ 
+        display: 'grid',
+        gridTemplateColumns: '55% 30%',
+        marginBottom: '0.5rem',
+        gap: '1rem',
+        maxWidth: '100%',
+        width: '100%',
+        padding: '0 1rem'
+      }}>
+        <div className="chart-container" style={{ 
+          height: '240px',
+          minWidth: 0
+        }}>
           <Bar data={timeDistributionData} options={timeDistributionOptions} />
         </div>
-        <div className="chart-container" style={{ marginRight: '1rem', height: '240px' }}>
-          <Bar data={dayDistributionData} options={dayDistributionOptions} />
-        </div>
-        <div className="chart-container" style={{ height: '240px' }}>
+        <div className="chart-container" style={{ 
+          height: '240px',
+          minWidth: 0
+        }}>
           <Bar data={efficiencyChartData} options={efficiencyChartOptions} />
         </div>
       </div>
