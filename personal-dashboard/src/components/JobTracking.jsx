@@ -207,17 +207,16 @@ const AddApplicationForm = ({ onApplicationAdded }) => {
     position: '',
     status: 'Applied',
     date_applied: new Date().toISOString().split('T')[0],
-    location: '',
     salary: '',
-    currency: 'USD',
+    location: '',
+    url: '',
     has_interview: false,
+    currency: 'USD',
     is_salary_listed: false,
     has_bonus: false,
-    url: '',
     portal_url: '',
-    resume_path: '',
     cover_letter_path: '',
-    description: ''
+    resume_path: ''
   });
 
   const [isFormVisible, setIsFormVisible] = useState(false);
@@ -276,8 +275,7 @@ const AddApplicationForm = ({ onApplicationAdded }) => {
       .insert([{
         ...formData,
         salary: formData.salary ? Number(formData.salary) : null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        // created_at and updated_at will be handled by the database defaults
       }]);
 
     if (error) {
@@ -285,23 +283,21 @@ const AddApplicationForm = ({ onApplicationAdded }) => {
       return;
     }
 
-    // Reset form and notify parent
     setFormData({
       company: '',
       position: '',
       status: 'Applied',
       date_applied: new Date().toISOString().split('T')[0],
-      location: '',
       salary: '',
-      currency: 'USD',
+      location: '',
+      url: '',
       has_interview: false,
+      currency: 'USD',
       is_salary_listed: false,
       has_bonus: false,
-      url: '',
       portal_url: '',
-      resume_path: '',
       cover_letter_path: '',
-      description: ''
+      resume_path: ''
     });
     
     onApplicationAdded();
@@ -376,17 +372,6 @@ const AddApplicationForm = ({ onApplicationAdded }) => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="location">Location</label>
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="form-group salary-group">
               <label htmlFor="salary">Salary</label>
               <div className="salary-input-group">
                 <input
@@ -408,6 +393,17 @@ const AddApplicationForm = ({ onApplicationAdded }) => {
                   ))}
                 </select>
               </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="location">Location</label>
+              <input
+                type="text"
+                id="location"
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
+              />
             </div>
           </div>
 
@@ -561,29 +557,80 @@ const ApplicationsTable = ({ onDataChange }) => {
     'Expired'
   ];
 
+  // Add a new state for tracking import status
+  const [isImporting, setIsImporting] = useState(false);
+
   useEffect(() => {
     fetchApplications();
   }, []);
 
   const fetchApplications = async () => {
-    const { data, error } = await supabase
-      .from('job_applications')
-      .select('*')
-      .order('date_applied', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching applications:', error);
-      return;
-    }
-
-    setApplications(data);
+    console.log('Fetching applications...');
     
-    // Extract unique companies and positions for filters
-    const uniqueCompanies = [...new Set(data.map(app => app.company))].sort();
-    const uniquePositions = [...new Set(data.map(app => app.position))].sort();
-    setCompanies(uniqueCompanies);
-    setPositions(uniquePositions);
+    try {
+      // Fetch the actual data
+      const { data, error } = await supabase
+        .from('job_applications')
+        .select('*')
+        .order('date_applied', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching applications:', error);
+        alert('Error fetching applications');
+        return;
+      }
+
+      if (!data) {
+        console.log('No data returned from database');
+        setApplications([]);
+        return;
+      }
+
+      console.log('Fetched applications:', data);
+      setApplications(data);
+      
+      // Update companies and positions lists
+      if (data.length > 0) {
+        const uniqueCompanies = [...new Set(data.map(app => app.company))].sort();
+        const uniquePositions = [...new Set(data.map(app => app.position))].sort();
+        setCompanies(uniqueCompanies);
+        setPositions(uniquePositions);
+      } else {
+        setCompanies([]);
+        setPositions([]);
+      }
+
+    } catch (err) {
+      console.error('Unexpected error during fetch:', err);
+      alert('Unexpected error during fetch');
+    }
   };
+
+  // Verify the connection with a simpler query
+  useEffect(() => {
+    const verifyConnection = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('job_applications')
+          .select('id')
+          .limit(1);
+
+        if (error) {
+          console.error('Database connection error:', error);
+          alert('Error connecting to database');
+          return;
+        }
+        
+        console.log('Database connection verified');
+        fetchApplications();
+      } catch (err) {
+        console.error('Connection verification error:', err);
+        alert('Error verifying database connection');
+      }
+    };
+
+    verifyConnection();
+  }, []);
 
   const handleSort = (key) => {
     setSortConfig(prev => ({
@@ -604,8 +651,8 @@ const ApplicationsTable = ({ onDataChange }) => {
         return;
       }
 
-      fetchApplications();
-      onDataChange();
+      await fetchApplications();
+      await onDataChange();
     }
   };
 
@@ -619,7 +666,8 @@ const ApplicationsTable = ({ onDataChange }) => {
       .from('job_applications')
       .update({
         ...editData,
-        updated_at: new Date().toISOString()
+        salary: editData.salary ? Number(editData.salary) : null
+        // updated_at will be handled by the trigger
       })
       .eq('id', editingId);
 
@@ -629,8 +677,8 @@ const ApplicationsTable = ({ onDataChange }) => {
     }
 
     setEditingId(null);
-    fetchApplications();
-    onDataChange();
+    await fetchApplications();
+    await onDataChange();
   };
 
   const handleExport = () => {
@@ -647,7 +695,8 @@ const ApplicationsTable = ({ onDataChange }) => {
       'Has Bonus': app.has_bonus,
       URL: app.url,
       'Portal URL': app.portal_url,
-      Description: app.description
+      'Resume Path': app.resume_path,
+      'Cover Letter Path': app.cover_letter_path
     }));
 
     const csv = Papa.unparse(csvContent);
@@ -659,42 +708,126 @@ const ApplicationsTable = ({ onDataChange }) => {
   };
 
   const handleImport = async (event) => {
+    setIsImporting(true);
     const file = event.target.files[0];
-    if (file) {
-      Papa.parse(file, {
-        header: true,
-        complete: async (results) => {
-          const formattedData = results.data.map(row => ({
-            company: row.Company,
-            position: row.Position,
-            status: row.Status,
-            date_applied: row['Date Applied'],
-            location: row.Location,
-            salary: parseFloat(row.Salary) || null,
-            currency: row.Currency,
-            has_interview: row['Has Interview'] === 'true',
-            is_salary_listed: row['Salary Listed'] === 'true',
-            has_bonus: row['Has Bonus'] === 'true',
-            url: row.URL,
-            portal_url: row['Portal URL'],
-            description: row.Description,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+    if (!file) {
+      setIsImporting(false);
+      return;
+    }
+
+    console.log('File selected:', file.name);
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        console.log('Parse complete:', results);
+
+        // Format the data with lowercase column names
+        const formattedData = results.data
+          .filter(row => row.Company && row.Position) // Remove empty rows
+          .map(row => ({
+            company: row.Company || '',
+            position: row.Position || '',
+            status: row.Status || 'Applied',
+            date_applied: row['Date Applied'] || new Date().toISOString().split('T')[0],
+            location: row.Location || '',
+            salary: row.Salary || '',
+            currency: row.Currency || 'USD',
+            has_interview: String(row['Has Interview']).toLowerCase() === 'true',
+            is_salary_listed: String(row['Salary Listed']).toLowerCase() === 'true',
+            has_bonus: String(row['Has Bonus']).toLowerCase() === 'true',
+            url: row.URL || '',
+            portal_url: row['Portal URL'] || '',
+            resume_path: row['Resume Path'] || '',
+            cover_letter_path: row['Cover Letter Path'] || ''
           }));
 
-          const { error } = await supabase
-            .from('job_applications')
-            .insert(formattedData);
+        console.log('Formatted data:', formattedData);
 
-          if (error) {
-            console.error('Error importing applications:', error);
-            return;
+        if (formattedData.length === 0) {
+          console.error('No valid data to import');
+          setIsImporting(false);
+          return;
+        }
+
+        try {
+          // Insert data in chunks
+          const chunkSize = 20;
+          for (let i = 0; i < formattedData.length; i += chunkSize) {
+            const chunk = formattedData.slice(i, i + chunkSize);
+            console.log(`Inserting chunk ${i / chunkSize + 1}:`, chunk);
+
+            const { error } = await supabase
+              .from('job_applications')
+              .insert(chunk);
+
+            if (error) {
+              console.error('Insert error:', error);
+              alert(`Error inserting data: ${error.message}`);
+              setIsImporting(false);
+              return;
+            }
           }
 
-          fetchApplications();
-          onDataChange();
+          console.log('All data inserted successfully');
+          event.target.value = '';
+          
+          // Refresh the data
+          await fetchApplications();
+          await onDataChange();
+          
+          alert('Import completed successfully!');
+        } catch (err) {
+          console.error('Unexpected error:', err);
+          alert(`Error during import: ${err.message}`);
         }
+
+        setIsImporting(false);
+      },
+      error: (error) => {
+        console.error('CSV parse error:', error);
+        alert(`Error parsing CSV: ${error}`);
+        setIsImporting(false);
+      }
+    });
+  };
+
+  const handleDeleteAll = async () => {
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete ALL job applications? This action cannot be undone!'
+    );
+
+    if (confirmDelete) {
+      const { error } = await supabase
+        .from('job_applications')
+        .delete()
+        .neq('id', 0);
+
+      if (error) {
+        console.error('Error deleting all applications:', error);
+        return;
+      }
+
+      // Reset all relevant state
+      setApplications([]);
+      setFilters({
+        company: '',
+        position: '',
+        status: []
       });
+      setCompanies([]);
+      setPositions([]);
+      setSortConfig({
+        key: 'date_applied',
+        direction: 'desc'
+      });
+      setEditingId(null);
+      setEditData({});
+
+      // Refresh all data
+      await fetchApplications();
+      await onDataChange();
     }
   };
 
@@ -758,13 +891,23 @@ const ApplicationsTable = ({ onDataChange }) => {
             type="file"
             accept=".csv"
             onChange={handleImport}
+            disabled={isImporting}
             style={{ display: 'none' }}
             id="import-input"
           />
-          <button onClick={() => document.getElementById('import-input').click()}>
-            Import CSV
+          <button 
+            onClick={() => document.getElementById('import-input').click()}
+            disabled={isImporting}
+          >
+            {isImporting ? 'Importing...' : 'Import CSV'}
           </button>
           <button onClick={handleExport}>Export CSV</button>
+          <button 
+            onClick={handleDeleteAll}
+            className="delete-all-btn"
+          >
+            Delete All Entries
+          </button>
         </div>
       </div>
 
@@ -839,7 +982,7 @@ const ApplicationsTable = ({ onDataChange }) => {
                     </td>
                     <td>
                       <input
-                        type="number"
+                        type="text"
                         value={editData.salary}
                         onChange={e => setEditData(prev => ({ ...prev, salary: e.target.value }))}
                       />
@@ -1054,11 +1197,18 @@ function JobTracking() {
     setMonthlyData(months);
   };
 
-  const handleDataChange = () => {
-    fetchMetrics();
-    calculateStats();
-    calculateMonthlyData();
+  const refreshAllData = async () => {
+    await Promise.all([
+      fetchMetrics(),
+      calculateStats(),
+      calculateMonthlyData()
+    ]);
   };
+
+  // Initial data load
+  useEffect(() => {
+    refreshAllData();
+  }, []);
 
   return (
     <div className="job-tracking">
@@ -1070,8 +1220,8 @@ function JobTracking() {
         progressStats={progressStats}
       />
       <MonthlyChart data={monthlyData} />
-      <AddApplicationForm onApplicationAdded={handleDataChange} />
-      <ApplicationsTable onDataChange={handleDataChange} />
+      <AddApplicationForm onApplicationAdded={refreshAllData} />
+      <ApplicationsTable onDataChange={refreshAllData} />
     </div>
   );
 }

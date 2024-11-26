@@ -366,4 +366,77 @@ td button:last-child {
 
 td button:last-child:hover {
   background-color: #da190b;
+}
+
+.delete-all-btn {
+  background-color: #f44336 !important;
+  margin-left: 1rem;
+}
+
+.delete-all-btn:hover {
+  background-color: #da190b !important;
+}
+
+/* Add these styles for column widths */
+.applications-table-section table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* This ensures our column widths are respected */
+}
+
+/* Define specific column widths */
+.applications-table-section th,
+.applications-table-section td {
+  padding: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.applications-table-section th:nth-child(1), /* Company */
+.applications-table-section td:nth-child(1) {
+  width: 12%;
+}
+
+.applications-table-section th:nth-child(2), /* Position */
+.applications-table-section td:nth-child(2) {
+  width: 24%;
+}
+
+.applications-table-section th:nth-child(3), /* Status */
+.applications-table-section td:nth-child(3) {
+  width: 8%;
+}
+
+.applications-table-section th:nth-child(4), /* Date Applied */
+.applications-table-section td:nth-child(4) {
+  width: 10%;
+}
+
+.applications-table-section th:nth-child(5), /* Location */
+.applications-table-section td:nth-child(5) {
+  width: 12%;
+}
+
+.applications-table-section th:nth-child(6), /* Salary */
+.applications-table-section td:nth-child(6) {
+  width: 15%;
+}
+
+.applications-table-section th:nth-child(7), /* Actions */
+.applications-table-section td:nth-child(7) {
+  width: 19%;
+}
+
+/* Add tooltip for truncated text */
+.applications-table-section td {
+  position: relative;
+}
+
+.applications-table-section td:hover {
+  overflow: visible;
+  white-space: normal;
+  word-break: break-word;
+  background-color: #2a2a2a;
+  z-index: 1;
 } 
