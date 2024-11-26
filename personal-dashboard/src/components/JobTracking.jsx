@@ -246,7 +246,7 @@ const MonthlyChart = ({ data }) => {
   };
 
   return (
-    <div className="chart-container">
+    <div className="chart-container" style={{ height: '240px' }}>
       <Bar data={chartData} options={options} />
     </div>
   );
@@ -1080,7 +1080,14 @@ const ApplicationsTable = ({ onDataChange, onEdit }) => {
                     <td>{app.status}</td>
                     <td>{app.date_applied}</td>
                     <td>{app.location}</td>
-                    <td>{app.salary ? `${app.currency} ${app.salary.toLocaleString()}` : ''}</td>
+                    <td>
+                      {app.salary ? (
+                        <>
+                          {app.is_salary_listed && 'Listed: '}
+                          {`${app.currency} ${app.salary.toLocaleString()}`}
+                        </>
+                      ) : ''}
+                    </td>
                     <td>
                       <button onClick={() => handleEdit(app)}>Edit</button>
                       <button onClick={() => handleDelete(app.id)}>Delete</button>
