@@ -843,60 +843,24 @@ function TimeEntry({ refreshTrigger }) {
       </div>
 
       {/* Project and Task charts row */}
-      <div className="charts-row">
-        <div className="chart-container">
-          <Bar 
-            data={{
-              ...chartData,
-              datasets: [{
-                ...chartData?.datasets?.[0],
-                data: projectHours.map(p => p.hours || 0)
-              }]
-            }} 
-            options={chartOptions} 
-          />
+      <div className="charts-row" style={{ marginBottom: '0.5rem' }}>
+        <div className="chart-container" style={{ marginRight: '1rem', height: '240px' }}>
+          <Bar data={chartData} options={chartOptions} />
         </div>
-        <div className="chart-container">
-          <Bar 
-            data={{
-              ...taskChartData,
-              datasets: [{
-                ...taskChartData?.datasets?.[0],
-                data: taskHours.map(t => t.hours || 0)
-              }]
-            }} 
-            options={taskChartOptions} 
-          />
+        <div className="chart-container" style={{ height: '240px' }}>
+          <Bar data={taskChartData} options={taskChartOptions} />
         </div>
       </div>
 
       {/* Time and Day distribution charts row */}
-      <div className="charts-row">
-        <div className="chart-container">
-          <Bar 
-            data={{
-              ...timeDistributionData,
-              datasets: [{
-                ...timeDistributionData?.datasets?.[0],
-                data: timeDistribution.map(t => t.hours || 0)
-              }]
-            }} 
-            options={timeDistributionOptions} 
-          />
+      <div className="charts-row" style={{ marginBottom: '.5rem' }}>
+        <div className="chart-container" style={{ marginRight: '1rem', height: '240px' }}>
+          <Bar data={timeDistributionData} options={timeDistributionOptions} />
         </div>
-        <div className="chart-container">
-          <Bar 
-            data={{
-              ...dayDistributionData,
-              datasets: [{
-                ...dayDistributionData?.datasets?.[0],
-                data: dayDistribution.map(d => d.hours || 0)
-              }]
-            }} 
-            options={dayDistributionOptions} 
-          />
+        <div className="chart-container" style={{ marginRight: '1rem', height: '240px' }}>
+          <Bar data={dayDistributionData} options={dayDistributionOptions} />
         </div>
-        <div className="chart-container">
+        <div className="chart-container" style={{ height: '240px' }}>
           <Bar data={efficiencyChartData} options={efficiencyChartOptions} />
         </div>
       </div>

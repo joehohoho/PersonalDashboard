@@ -397,7 +397,8 @@ function TimeEntriesTable({ refreshTrigger }) {
                           style={{
                             width: "100%",
                             minWidth: "200px",
-                            resize: "vertical"
+                            resize: "vertical",
+                            whiteSpace: "pre-wrap"
                           }}
                         />
                       </td>
@@ -415,7 +416,7 @@ function TimeEntriesTable({ refreshTrigger }) {
                       <td>{formatTime(entry.start_time)}</td>
                       <td>{formatTime(entry.end_time)}</td>
                       <td>{Number(entry.duration).toFixed(2)}</td>
-                      <td>{entry.description}</td>
+                      <td style={{ whiteSpace: 'pre-wrap' }}>{entry.description}</td>
                       <td>
                         <button onClick={() => setEditingEntry(entry)}>Edit</button>
                       </td>

@@ -63,14 +63,20 @@
 
 .chart-container {
   flex: 1;
-  background-color: #2a2a2a;
-  border-radius: 8px;
-  padding: 1.5rem;
-  height: 202px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--card-shadow);
+  height: 240px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 1rem;
 }
 
 .dashboard {
   padding-top: 0.5rem;
+}
+
+.charts-container {
+  gap: 1rem;
+}
+
+.chart-card {
+  margin-bottom: 0rem;
 } 
