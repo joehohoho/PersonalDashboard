@@ -6,6 +6,23 @@ const formatTime = (time) => {
   return time.substring(0, 5); // Takes only HH:MM from HH:MM:SS
 };
 
+const calculateDuration = (startTime, endTime) => {
+  if (!startTime || !endTime) return 0;
+  
+  const [startHour, startMinute] = startTime.split(':').map(Number);
+  const [endHour, endMinute] = endTime.split(':').map(Number);
+  
+  let hours = endHour - startHour;
+  let minutes = endMinute - startMinute;
+  
+  if (minutes < 0) {
+    hours -= 1;
+    minutes += 60;
+  }
+  
+  return Number((hours + minutes / 60).toFixed(2));
+};
+
 function TimeEntriesTable({ refreshTrigger }) {
   const [entries, setEntries] = useState([]);
   const [filters, setFilters] = useState({
@@ -345,7 +362,8 @@ function TimeEntriesTable({ refreshTrigger }) {
                           value={editingEntry.start_time}
                           onChange={(e) => setEditingEntry({
                             ...editingEntry,
-                            start_time: e.target.value
+                            start_time: e.target.value,
+                            duration: calculateDuration(e.target.value, editingEntry.end_time)
                           })}
                         />
                       </td>
@@ -355,7 +373,8 @@ function TimeEntriesTable({ refreshTrigger }) {
                           value={editingEntry.end_time}
                           onChange={(e) => setEditingEntry({
                             ...editingEntry,
-                            end_time: e.target.value
+                            end_time: e.target.value,
+                            duration: calculateDuration(editingEntry.start_time, e.target.value)
                           })}
                         />
                       </td>
@@ -364,10 +383,7 @@ function TimeEntriesTable({ refreshTrigger }) {
                           type="number"
                           step="0.25"
                           value={editingEntry.duration}
-                          onChange={(e) => setEditingEntry({
-                            ...editingEntry,
-                            duration: e.target.value
-                          })}
+                          readOnly
                         />
                       </td>
                       <td>
