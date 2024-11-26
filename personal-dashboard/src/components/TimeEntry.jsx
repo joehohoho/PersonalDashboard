@@ -806,11 +806,13 @@ function TimeEntry({ refreshTrigger }) {
     return new Date().getFullYear();
   };
 
-  // Add helper function to get days elapsed in current week
+  // Update the helper function to calculate days elapsed in current week (Monday-Sunday)
   const getWeekProgress = () => {
     const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 (Sunday) through 6 (Saturday)
-    return dayOfWeek + 1; // Add 1 to show human-readable count (1-7)
+    const dayOfWeek = today.getDay();
+    // Convert Sunday (0) through Saturday (6) to Monday (1) through Sunday (7)
+    const mondayBasedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
+    return mondayBasedDay;
   };
 
   // Add helper function to get current day abbreviation
