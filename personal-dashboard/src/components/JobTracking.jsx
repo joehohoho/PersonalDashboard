@@ -754,6 +754,10 @@ const ApplicationsTable = ({ onDataChange }) => {
 
   const handleEdit = (application) => {
     setSelectedApplication(application);
+    document.querySelector('.add-application-section')?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    });
   };
 
   const handleUpdate = () => {
