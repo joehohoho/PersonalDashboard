@@ -59,6 +59,7 @@ function TimeEntry({ refreshTrigger }) {
   const [taskHours, setTaskHours] = useState([]);
   const [timeDistribution, setTimeDistribution] = useState([]);
   const [dayDistribution, setDayDistribution] = useState([]);
+  const [weekEfficiency, setWeekEfficiency] = useState([]);
 
   const fetchTimeMetrics = async () => {
     const today = new Date().toISOString().split('T')[0];
@@ -101,7 +102,8 @@ function TimeEntry({ refreshTrigger }) {
         fetchProjectHours(),
         fetchTaskHours(),
         fetchTimeDistribution(),
-        fetchDayDistribution()
+        fetchDayDistribution(),
+        fetchWeekEfficiency()
       ]);
     };
 
@@ -453,29 +455,83 @@ function TimeEntry({ refreshTrigger }) {
       .select('work_date, duration');
 
     if (timeError) {
-      console.error('Error fetching day distribution:', timeError);
+      console.error('Error fetching day distribution:', error);
       return;
     }
 
-    // Initialize days array
+    // Initialize days array with counts and totals
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const dayTotals = days.reduce((acc, day) => ({ ...acc, [day]: 0 }), {});
+    const dayStats = days.reduce((acc, day) => ({ 
+      ...acc, 
+      [day]: { total: 0, count: 0 } 
+    }), {});
 
-    // Calculate hours worked on each day
+    // Calculate total hours and count of days worked
     timeEntries.forEach(entry => {
       if (entry.work_date) {
         const dayName = days[new Date(entry.work_date).getDay()];
-        dayTotals[dayName] += Number(entry.duration || 0);
+        dayStats[dayName].total += Number(entry.duration || 0);
+        dayStats[dayName].count += 1;
       }
     });
 
-    // Convert to array and format numbers
+    // Convert to array and calculate averages
     const distribution = days.map(day => ({
       day,
-      hours: Number(dayTotals[day].toFixed(2))
+      hours: dayStats[day].count > 0 
+        ? Number((dayStats[day].total / dayStats[day].count).toFixed(2))
+        : 0
     }));
 
     setDayDistribution(distribution);
+  };
+
+  const fetchWeekEfficiency = async () => {
+    const { data: timeEntries, error } = await supabase
+      .from('time_entries')
+      .select('work_date, duration');
+
+    if (error) {
+      console.error('Error fetching week efficiency:', error);
+      return;
+    }
+
+    // Get current week's dates
+    const today = new Date();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
+    
+    const weekData = [];
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(weekStart);
+      currentDate.setDate(weekStart.getDate() + i);
+      const dateString = currentDate.toISOString().split('T')[0];
+      
+      // Calculate target hours (8 for Monday-Friday, 0 for weekend)
+      const dayOfWeek = currentDate.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const targetHours = isWeekend ? 0 : 8;
+      
+      // Calculate actual hours
+      const actualHours = timeEntries
+        .filter(entry => entry.work_date === dateString)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+      
+      // Calculate efficiency percentage (avoid division by zero)
+      let efficiencyValue = 0;
+      if (targetHours > 0) {
+        efficiencyValue = (actualHours / targetHours) * 100;
+      }
+      
+      weekData.push({
+        day: currentDate.toLocaleString('en-US', { weekday: 'short' }),
+        efficiency: Number(efficiencyValue.toFixed(1)),
+        actual: actualHours,
+        target: targetHours
+      });
+    }
+
+    setWeekEfficiency(weekData);
   };
 
   const chartData = {
@@ -648,10 +704,15 @@ function TimeEntry({ refreshTrigger }) {
       },
       title: {
         display: true,
-        text: 'Hours by Day of Week',
+        text: 'Average Hours by Day of Week',  // Updated title
         color: '#ffffff',
         font: {
           size: 16
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => `Avg Hours: ${context.raw.toFixed(2)}`
         }
       }
     },
@@ -663,6 +724,70 @@ function TimeEntry({ refreshTrigger }) {
         },
         ticks: {
           color: '#ffffff'
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: '#ffffff'
+        }
+      }
+    }
+  };
+
+  const efficiencyChartData = {
+    labels: weekEfficiency.map(d => d.day),
+    datasets: [
+      {
+        label: 'Efficiency %',
+        data: weekEfficiency.map(d => d.efficiency),
+        backgroundColor: '#FF6B6B',
+        borderRadius: 6,
+      }
+    ]
+  };
+
+  const efficiencyChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      },
+      title: {
+        display: true,
+        text: 'Weekly Efficiency (Target: 8hrs/day)',
+        color: '#ffffff',
+        font: {
+          size: 16
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const dataIndex = context.dataIndex;
+            const data = weekEfficiency[dataIndex];
+            return [
+              `Efficiency: ${data.efficiency}%`,
+              `Actual: ${data.actual.toFixed(1)}hrs`,
+              `Target: ${data.target}hrs`
+            ];
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 150,
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        },
+        ticks: {
+          color: '#ffffff',
+          callback: (value) => `${value}%`
         }
       },
       x: {
@@ -688,12 +813,17 @@ function TimeEntry({ refreshTrigger }) {
     return dayOfWeek + 1; // Add 1 to show human-readable count (1-7)
   };
 
+  // Add helper function to get current day abbreviation
+  const getCurrentDayAbbr = () => {
+    return new Date().toLocaleString('en-US', { weekday: 'short' });
+  };
+
   return (
     <div className="dashboard">
       {/* Add metrics cards at the top */}
       <div className="metrics-row">
         <div className="metric-card">
-          <h3>Today</h3>
+          <h3>Today ({getCurrentDayAbbr()})</h3>
           <p>{(metrics.today || 0).toFixed(2)}</p>
         </div>
         <div className="metric-card">
@@ -763,6 +893,9 @@ function TimeEntry({ refreshTrigger }) {
             }} 
             options={dayDistributionOptions} 
           />
+        </div>
+        <div className="chart-container">
+          <Bar data={efficiencyChartData} options={efficiencyChartOptions} />
         </div>
       </div>
 
