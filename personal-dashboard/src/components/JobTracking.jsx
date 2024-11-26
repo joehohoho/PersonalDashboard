@@ -54,6 +54,38 @@ const MetricsRow = ({ metrics }) => {
 };
 
 const StatsCards = ({ applicationStats, salaryStats, jobStats, progressStats }) => {
+  const formatPercentage = (value) => {
+    const absValue = Math.abs(value); // Get absolute value
+    const formattedValue = absValue.toFixed(0); // Remove decimals
+    const isPositive = value >= 0;
+    
+    return (
+      <span className={isPositive ? 'positive' : 'negative'}>
+        {formattedValue}%
+      </span>
+    );
+  };
+
+  const formatMonthlyComparison = (thisMonth, lastMonth) => {
+    if (!thisMonth || !lastMonth) return 'N/A';
+    
+    const percentChange = lastMonth === 0 
+      ? 100 
+      : ((thisMonth - lastMonth) / lastMonth) * 100;
+    
+    const absValue = Math.abs(percentChange).toFixed(0);
+    const isPositive = percentChange >= 0;
+    
+    return (
+      <span>
+        {thisMonth} vs {lastMonth}{' '}
+        <span className={isPositive ? 'positive' : 'negative'}>
+          ({absValue}%)
+        </span>
+      </span>
+    );
+  };
+
   return (
     <div className="stats-cards">
       <div className="stats-card">
@@ -66,18 +98,17 @@ const StatsCards = ({ applicationStats, salaryStats, jobStats, progressStats }) 
           <label>Last 7 Days vs Previous</label>
           <p>
             {applicationStats.lastWeek} vs {applicationStats.previousWeek}
-            <span className={`trend ${applicationStats.weeklyDiff >= 0 ? 'positive' : 'negative'}`}>
-              {applicationStats.weeklyDiff > 0 ? '+' : ''}{applicationStats.weeklyDiff}%
-            </span>
+            {' '}
+            ({formatPercentage(applicationStats.weeklyDiff)})
           </p>
         </div>
         <div className="stat-item">
           <label>This Month vs Last</label>
           <p>
-            {applicationStats.thisMonth} vs {applicationStats.lastMonth}
-            <span className={`trend ${applicationStats.monthlyDiff >= 0 ? 'positive' : 'negative'}`}>
-              {applicationStats.monthlyDiff > 0 ? '+' : ''}{applicationStats.monthlyDiff}%
-            </span>
+            {formatMonthlyComparison(
+              applicationStats.thisMonth,
+              applicationStats.lastMonth
+            )}
           </p>
         </div>
       </div>
