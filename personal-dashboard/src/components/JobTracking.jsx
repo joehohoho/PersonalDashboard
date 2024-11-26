@@ -581,7 +581,7 @@ const AddApplicationForm = ({ onApplicationAdded }) => {
   );
 };
 
-const ApplicationsTable = ({ onDataChange }) => {
+const ApplicationsTable = ({ onDataChange, onEdit }) => {
   const [applications, setApplications] = useState([]);
   const [filters, setFilters] = useState({
     company: '',
@@ -596,6 +596,8 @@ const ApplicationsTable = ({ onDataChange }) => {
   });
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
+
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
 
   const statusOptions = [
     'Contacted',
@@ -882,22 +884,33 @@ const ApplicationsTable = ({ onDataChange }) => {
     }
   };
 
-  const filteredApplications = applications
-    .filter(app => {
-      return (
-        (!filters.company || app.company === filters.company) &&
-        (!filters.position || app.position === filters.position) &&
-        (filters.status.length === 0 || filters.status.includes(app.status))
-      );
-    })
-    .sort((a, b) => {
-      const aValue = a[sortConfig.key];
-      const bValue = b[sortConfig.key];
-      
-      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-      return 0;
-    });
+  const handleStatusChange = (status) => {
+    setFilters(prev => ({
+      ...prev,
+      status: prev.status.includes(status)
+        ? prev.status.filter(s => s !== status)
+        : [...prev.status, status]
+    }));
+  };
+
+  // Get unique company and position names
+  const companyOptions = ['All', ...new Set(applications
+    .map(app => app.company)
+    .filter(Boolean)
+    .sort())];
+
+  const positionOptions = ['All', ...new Set(applications
+    .map(app => app.position)
+    .filter(Boolean)
+    .sort())];
+
+  // Update the filtering logic
+  const filteredApplications = applications.filter(app => {
+    const matchesCompany = filters.company === '' || filters.company === 'All' || app.company === filters.company;
+    const matchesPosition = filters.position === '' || filters.position === 'All' || app.position === filters.position;
+    const matchesStatus = filters.status.length === 0 || filters.status.includes(app.status);
+    return matchesCompany && matchesPosition && matchesStatus;
+  });
 
   return (
     <div className="applications-table-section">
@@ -906,35 +919,51 @@ const ApplicationsTable = ({ onDataChange }) => {
           <select
             value={filters.company}
             onChange={e => setFilters(prev => ({ ...prev, company: e.target.value }))}
+            className="company-filter"
           >
-            <option value="">All Companies</option>
-            {companies.map(company => (
-              <option key={company} value={company}>{company}</option>
+            {companyOptions.map(company => (
+              <option key={company} value={company}>
+                {company}
+              </option>
             ))}
           </select>
 
           <select
             value={filters.position}
             onChange={e => setFilters(prev => ({ ...prev, position: e.target.value }))}
+            className="position-filter"
           >
-            <option value="">All Positions</option>
-            {positions.map(position => (
-              <option key={position} value={position}>{position}</option>
+            {positionOptions.map(position => (
+              <option key={position} value={position}>
+                {position}
+              </option>
             ))}
           </select>
 
-          <select
-            multiple
-            value={filters.status}
-            onChange={e => setFilters(prev => ({
-              ...prev,
-              status: Array.from(e.target.selectedOptions, option => option.value)
-            }))}
-          >
-            {statusOptions.map(status => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
+          <div className="status-filter-container">
+            <button 
+              className="status-filter-button"
+              onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+            >
+              Status Filter ({filters.status.length || 'All'})
+            </button>
+            {isStatusDropdownOpen && (
+              <div className="status-dropdown">
+                <div className="status-options">
+                  {statusOptions.map(status => (
+                    <label key={status} className="status-option">
+                      <input
+                        type="checkbox"
+                        checked={filters.status.includes(status)}
+                        onChange={() => handleStatusChange(status)}
+                      />
+                      <span>{status}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="import-export">
