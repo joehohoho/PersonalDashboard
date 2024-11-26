@@ -77,22 +77,37 @@ function TimeEntry({ refreshTrigger }) {
       return;
     }
 
-    const totals = {
-      today: data
-        .filter(entry => entry.work_date === today)
-        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
-      week: data
-        .filter(entry => new Date(entry.work_date) >= weekStart)
-        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
-      month: data
-        .filter(entry => new Date(entry.work_date) >= monthStart)
-        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
-      year: data
-        .filter(entry => entry.work_date >= yearStart)
-        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0)
-    };
+    if (data) {
+      // Calculate average daily hours
+      const uniqueDays = new Set(data.map(entry => entry.work_date)).size;
+      const totalHours = data.reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+      const avgDailyHours = uniqueDays > 0 ? totalHours / uniqueDays : 0;
 
-    setMetrics(totals);
+      // Calculate average weekly hours
+      const firstEntry = new Date(Math.min(...data.map(entry => new Date(entry.work_date))));
+      const lastEntry = new Date(Math.max(...data.map(entry => new Date(entry.work_date))));
+      const totalWeeks = Math.ceil((lastEntry - firstEntry) / (7 * 24 * 60 * 60 * 1000));
+      const avgWeeklyHours = totalWeeks > 0 ? totalHours / totalWeeks : 0;
+
+      const totals = {
+        today: data
+          .filter(entry => entry.work_date === today)
+          .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
+        week: data
+          .filter(entry => new Date(entry.work_date) >= weekStart)
+          .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
+        month: data
+          .filter(entry => new Date(entry.work_date) >= monthStart)
+          .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
+        year: data
+          .filter(entry => entry.work_date >= yearStart)
+          .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
+        avgDaily: avgDailyHours,
+        avgWeekly: avgWeeklyHours
+      };
+
+      setMetrics(totals);
+    }
   };
 
   useEffect(() => {
@@ -866,6 +881,14 @@ function TimeEntry({ refreshTrigger }) {
         <div className="metric-card">
           <h3>This Year ({getCurrentYear()})</h3>
           <p>{(metrics.year || 0).toFixed(2)}</p>
+        </div>
+        <div className="metric-card">
+          <h3>Avg Daily Hours</h3>
+          <p>{(metrics.avgDaily || 0).toFixed(2)}</p>
+        </div>
+        <div className="metric-card">
+          <h3>Avg Weekly Hours</h3>
+          <p>{(metrics.avgWeekly || 0).toFixed(2)}</p>
         </div>
       </div>
 
