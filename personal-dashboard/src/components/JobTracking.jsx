@@ -252,7 +252,7 @@ const MonthlyChart = ({ data }) => {
   );
 };
 
-const AddApplicationForm = ({ onApplicationAdded }) => {
+const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = null }) => {
   const [formData, setFormData] = useState({
     company: '',
     position: '',
@@ -267,10 +267,21 @@ const AddApplicationForm = ({ onApplicationAdded }) => {
     has_bonus: false,
     portal_url: '',
     cover_letter_path: '',
-    resume_path: ''
+    resume_path: '',
+    description: ''
   });
 
-  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isFormVisible, setIsFormVisible] = useState(!!editData);
+
+  useEffect(() => {
+    if (editData) {
+      setFormData({
+        ...editData,
+        salary: editData.salary ? editData.salary.toString() : '',
+      });
+      setIsFormVisible(true);
+    }
+  }, [editData]);
 
   const statusOptions = [
     'Contacted',
@@ -321,17 +332,35 @@ const AddApplicationForm = ({ onApplicationAdded }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const { data, error } = await supabase
-      .from('job_applications')
-      .insert([{
-        ...formData,
-        salary: formData.salary ? Number(formData.salary) : null,
-        // created_at and updated_at will be handled by the database defaults
-      }]);
+    if (editData) {
+      const { data, error } = await supabase
+        .from('job_applications')
+        .update({
+          ...formData,
+          salary: formData.salary ? Number(formData.salary) : null,
+        })
+        .eq('id', editData.id);
 
-    if (error) {
-      console.error('Error adding application:', error);
-      return;
+      if (error) {
+        console.error('Error updating application:', error);
+        return;
+      }
+
+      onUpdate && onUpdate();
+    } else {
+      const { data, error } = await supabase
+        .from('job_applications')
+        .insert([{
+          ...formData,
+          salary: formData.salary ? Number(formData.salary) : null,
+        }]);
+
+      if (error) {
+        console.error('Error adding application:', error);
+        return;
+      }
+
+      onApplicationAdded();
     }
 
     setFormData({
@@ -348,21 +377,23 @@ const AddApplicationForm = ({ onApplicationAdded }) => {
       has_bonus: false,
       portal_url: '',
       cover_letter_path: '',
-      resume_path: ''
+      resume_path: '',
+      description: ''
     });
     
-    onApplicationAdded();
     setIsFormVisible(false);
   };
 
   return (
     <div className="add-application-section">
-      <button 
-        className="toggle-form-btn"
-        onClick={() => setIsFormVisible(!isFormVisible)}
-      >
-        {isFormVisible ? 'Hide Form' : 'Add New Application'}
-      </button>
+      {!editData && (
+        <button 
+          className="toggle-form-btn"
+          onClick={() => setIsFormVisible(!isFormVisible)}
+        >
+          {isFormVisible ? 'Hide Form' : 'Add New Application'}
+        </button>
+      )}
 
       {isFormVisible && (
         <form onSubmit={handleSubmit} className="application-form">
@@ -572,7 +603,20 @@ const AddApplicationForm = ({ onApplicationAdded }) => {
 
           <div className="form-row">
             <div className="form-group">
-              <button type="submit">Add Application</button>
+              <button type="submit">
+                {editData ? 'Update Application' : 'Add Application'}
+              </button>
+              {editData && (
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setIsFormVisible(false);
+                    onUpdate && onUpdate();
+                  }}
+                >
+                  Cancel
+                </button>
+              )}
             </div>
           </div>
         </form>
@@ -581,7 +625,7 @@ const AddApplicationForm = ({ onApplicationAdded }) => {
   );
 };
 
-const ApplicationsTable = ({ onDataChange, onEdit }) => {
+const ApplicationsTable = ({ onDataChange }) => {
   const [applications, setApplications] = useState([]);
   const [filters, setFilters] = useState({
     company: '',
@@ -594,8 +638,7 @@ const ApplicationsTable = ({ onDataChange, onEdit }) => {
     key: 'date_applied',
     direction: 'desc'
   });
-  const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({});
+  const [selectedApplication, setSelectedApplication] = useState(null);
 
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
 
@@ -710,28 +753,13 @@ const ApplicationsTable = ({ onDataChange, onEdit }) => {
   };
 
   const handleEdit = (application) => {
-    setEditingId(application.id);
-    setEditData(application);
+    setSelectedApplication(application);
   };
 
-  const handleUpdate = async () => {
-    const { error } = await supabase
-      .from('job_applications')
-      .update({
-        ...editData,
-        salary: editData.salary ? Number(editData.salary) : null
-        // updated_at will be handled by the trigger
-      })
-      .eq('id', editingId);
-
-    if (error) {
-      console.error('Error updating application:', error);
-      return;
-    }
-
-    setEditingId(null);
-    await fetchApplications();
-    await onDataChange();
+  const handleUpdate = () => {
+    setSelectedApplication(null);
+    fetchApplications();
+    onDataChange();
   };
 
   const handleExport = () => {
@@ -875,8 +903,7 @@ const ApplicationsTable = ({ onDataChange, onEdit }) => {
         key: 'date_applied',
         direction: 'desc'
       });
-      setEditingId(null);
-      setEditData({});
+      setSelectedApplication(null);
 
       // Refresh all data
       await fetchApplications();
@@ -914,6 +941,13 @@ const ApplicationsTable = ({ onDataChange, onEdit }) => {
 
   return (
     <div className="applications-table-section">
+      {selectedApplication && (
+        <AddApplicationForm 
+          editData={selectedApplication}
+          onUpdate={handleUpdate}
+        />
+      )}
+      
       <div className="table-actions">
         <div className="filters">
           <select
@@ -1019,81 +1053,23 @@ const ApplicationsTable = ({ onDataChange, onEdit }) => {
           <tbody>
             {filteredApplications.map(app => (
               <tr key={app.id}>
-                {editingId === app.id ? (
-                  // Edit mode
-                  <>
-                    <td>
-                      <input
-                        type="text"
-                        value={editData.company}
-                        onChange={e => setEditData(prev => ({ ...prev, company: e.target.value }))}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        value={editData.position}
-                        onChange={e => setEditData(prev => ({ ...prev, position: e.target.value }))}
-                      />
-                    </td>
-                    <td>
-                      <select
-                        value={editData.status}
-                        onChange={e => setEditData(prev => ({ ...prev, status: e.target.value }))}
-                      >
-                        {statusOptions.map(status => (
-                          <option key={status} value={status}>{status}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <input
-                        type="date"
-                        value={editData.date_applied}
-                        onChange={e => setEditData(prev => ({ ...prev, date_applied: e.target.value }))}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        value={editData.location}
-                        onChange={e => setEditData(prev => ({ ...prev, location: e.target.value }))}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        value={editData.salary}
-                        onChange={e => setEditData(prev => ({ ...prev, salary: e.target.value }))}
-                      />
-                    </td>
-                    <td>
-                      <button onClick={handleUpdate}>Save</button>
-                      <button onClick={() => setEditingId(null)}>Cancel</button>
-                    </td>
-                  </>
-                ) : (
-                  // View mode
-                  <>
-                    <td>{app.company}</td>
-                    <td>{app.position}</td>
-                    <td>{app.status}</td>
-                    <td>{app.date_applied}</td>
-                    <td>{app.location}</td>
-                    <td>
-                      {app.salary ? (
-                        <>
-                          {app.is_salary_listed && 'Listed: '}
-                          {`${app.currency} ${app.salary.toLocaleString()}`}
-                        </>
-                      ) : ''}
-                    </td>
-                    <td>
-                      <button onClick={() => handleEdit(app)}>Edit</button>
-                      <button onClick={() => handleDelete(app.id)}>Delete</button>
-                    </td>
-                  </>
-                )}
+                <td>{app.company}</td>
+                <td>{app.position}</td>
+                <td>{app.status}</td>
+                <td>{app.date_applied}</td>
+                <td>{app.location}</td>
+                <td>
+                  {app.salary ? (
+                    <>
+                      {app.is_salary_listed && 'Listed: '}
+                      {`${app.currency} ${app.salary.toLocaleString()}`}
+                    </>
+                  ) : ''}
+                </td>
+                <td>
+                  <button onClick={() => handleEdit(app)}>Edit</button>
+                  <button onClick={() => handleDelete(app.id)}>Delete</button>
+                </td>
               </tr>
             ))}
           </tbody>
