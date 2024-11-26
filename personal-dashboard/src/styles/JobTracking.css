@@ -438,4 +438,10 @@ td button:last-child:hover {
   word-break: break-word;
   background-color: #2a2a2a;
   z-index: 1;
+}
+
+.metric-card .percentage {
+  font-size: 0.85em;
+  color: #888;
+  margin-left: 4px;
 } 

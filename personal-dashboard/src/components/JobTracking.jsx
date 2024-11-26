@@ -23,6 +23,11 @@ ChartJS.register(
 );
 
 const MetricsRow = ({ metrics }) => {
+  const calculatePercentage = (value) => {
+    if (!metrics.total || value === undefined) return '0%';
+    return `${Math.round((value / metrics.total) * 100)}%`;
+  };
+
   return (
     <div className="metrics-row">
       <div className="metric-card">
@@ -31,23 +36,38 @@ const MetricsRow = ({ metrics }) => {
       </div>
       <div className="metric-card">
         <h3>Active</h3>
-        <p>{metrics.active}</p>
+        <p>
+          {metrics.active}
+          <span className="percentage"> ({calculatePercentage(metrics.active)})</span>
+        </p>
       </div>
       <div className="metric-card">
         <h3>Rejected</h3>
-        <p>{metrics.rejected}</p>
+        <p>
+          {metrics.rejected}
+          <span className="percentage"> ({calculatePercentage(metrics.rejected)})</span>
+        </p>
       </div>
       <div className="metric-card">
         <h3>Expired</h3>
-        <p>{metrics.expired}</p>
+        <p>
+          {metrics.expired}
+          <span className="percentage"> ({calculatePercentage(metrics.expired)})</span>
+        </p>
       </div>
       <div className="metric-card">
         <h3>Interview Stage</h3>
-        <p>{metrics.interview}</p>
+        <p>
+          {metrics.interview}
+          <span className="percentage"> ({calculatePercentage(metrics.interview)})</span>
+        </p>
       </div>
       <div className="metric-card">
         <h3>Offers</h3>
-        <p>{metrics.offers}</p>
+        <p>
+          {metrics.offers}
+          <span className="percentage"> ({calculatePercentage(metrics.offers)})</span>
+        </p>
       </div>
     </div>
   );
