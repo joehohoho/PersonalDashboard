@@ -306,6 +306,7 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
 
   const handleFileSelect = async (type) => {
     try {
+      // First try to get the file through the picker
       const handle = await window.showOpenFilePicker({
         types: [
           {
@@ -317,11 +318,22 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
           }
         ]
       });
-      const file = await handle[0].getFile();
+      
+      const fileHandle = handle[0];
+      const file = await fileHandle.getFile();
+      
+      // Hardcoded network share path - replace with your actual path
+      const sharePath = 'C:\\Users\\joe5h\\OneDrive\\Documents\\Personal\\Resume';
+      
+      // Remove any trailing backslashes and create the full UNC path
+      const cleanSharePath = sharePath.replace(/\\+$/, '');
+      const fullUNCPath = `${cleanSharePath}\\${file.name}`;
+      
       setFormData(prev => ({
         ...prev,
-        [`${type}_path`]: file.path
+        [`${type}_path`]: fullUNCPath
       }));
+
     } catch (err) {
       if (err.name !== 'AbortError') {
         console.error('Error selecting file:', err);
@@ -558,8 +570,11 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
                 <input
                   type="text"
                   value={formData.resume_path}
-                  readOnly
-                  placeholder="No file selected"
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    resume_path: e.target.value
+                  }))}
+                  placeholder="Enter or select file path"
                 />
                 <button 
                   type="button"
@@ -576,8 +591,11 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
                 <input
                   type="text"
                   value={formData.cover_letter_path}
-                  readOnly
-                  placeholder="No file selected"
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    cover_letter_path: e.target.value
+                  }))}
+                  placeholder="Enter or select file path"
                 />
                 <button 
                   type="button"

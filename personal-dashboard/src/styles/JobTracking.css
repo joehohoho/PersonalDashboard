@@ -203,11 +203,16 @@
 
 .file-input-group {
   display: flex;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .file-input-group input {
   flex: 1;
+  min-width: 200px;
+}
+
+.file-input-group button {
+  white-space: nowrap;
 }
 
 .file-input-group button {
