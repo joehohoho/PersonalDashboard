@@ -430,7 +430,7 @@ td button:last-child:hover {
 
 .applications-table-section th:nth-child(2), /* Position */
 .applications-table-section td:nth-child(2) {
-  width: 25%;
+  width: 27%;
 }
 
 .applications-table-section th:nth-child(3), /* Status */
@@ -440,7 +440,7 @@ td button:last-child:hover {
 
 .applications-table-section th:nth-child(4), /* Date Applied */
 .applications-table-section td:nth-child(4) {
-  width: 12%;
+  width: 10%;
 }
 
 .applications-table-section th:nth-child(5), /* Location */
@@ -450,7 +450,7 @@ td button:last-child:hover {
 
 .applications-table-section th:nth-child(6), /* Salary */
 .applications-table-section td:nth-child(6) {
-  width: 15%;
+  width: 17%;
 }
 
 .applications-table-section th:nth-child(7), /* Links */
@@ -460,7 +460,7 @@ td button:last-child:hover {
 
 .applications-table-section th:nth-child(8), /* Actions */
 .applications-table-section td:nth-child(8) {
-  width: 12%;
+  width: 10%;
 }
 
 /* Add tooltip for truncated text */
@@ -590,5 +590,31 @@ td button:last-child:hover {
 
 .links-column a:hover {
   text-decoration: underline;
+}
+
+/* Update the table cell padding */
+.applications-table-section td {
+  padding: 4px 4px;
+  border-top: 1px solid var(--border-color);
+}
+
+.applications-table-section th {
+  padding: 8px 4px;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  background-color: #1a1a1a;
+}
+
+/* Add a small right margin to the last cell to prevent content from touching the edge */
+.applications-table-section td:last-child,
+.applications-table-section th:last-child {
+  padding-right: 8px;
+}
+
+/* Add a small left margin to the first cell to prevent content from touching the edge */
+.applications-table-section td:first-child,
+.applications-table-section th:first-child {
+  padding-left: 8px;
 }
  

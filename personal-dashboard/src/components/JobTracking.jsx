@@ -1011,7 +1011,7 @@ const ApplicationsTable = ({ onDataChange }) => {
     return 0;
   });
 
-  const formatSalary = (salaryValue, isListed) => {
+  const formatSalary = (salaryValue, isListed, currency) => {
     if (!salaryValue) return '';
     
     // Check if it's a range (stored as "min-max")
@@ -1033,7 +1033,8 @@ const ApplicationsTable = ({ onDataChange }) => {
           maximumFractionDigits: 0
         });
     
-    return isListed ? `Listed: ${formattedValue}` : formattedValue;
+    const currencyLabel = currency === 'USD' ? ' USD' : '';
+    return `${isListed ? 'Listed: ' : ''}${formattedValue}${currencyLabel}`;
   };
 
   return (
@@ -1156,7 +1157,9 @@ const ApplicationsTable = ({ onDataChange }) => {
                 <td>{app.status}</td>
                 <td>{app.date_applied}</td>
                 <td>{app.location}</td>
-                <td>{formatSalary(app.salary, app.is_salary_listed)}</td>
+                <td className="salary-cell">
+                  {formatSalary(app.salary, app.is_salary_listed, app.currency)}
+                </td>
                 <td className="links-column">
                   {app.url && (
                     <div>
