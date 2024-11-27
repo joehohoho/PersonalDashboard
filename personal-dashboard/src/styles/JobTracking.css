@@ -292,7 +292,10 @@
 }
 
 .import-export button {
-  padding: 0.5rem 1rem;
+  font-size: 0.75em;
+  padding: 6px 12px;
+  height: 30px;
+  min-width: 75px;
   border-radius: 4px;
   background-color: #4caf50;
   color: white;
@@ -370,6 +373,10 @@ td button:last-child:hover {
 }
 
 .delete-all-btn {
+  font-size: 0.75em;
+  padding: 6px 12px;
+  height: 30px;
+  min-width: 75px;
   background-color: #f44336 !important;
   margin-left: 1rem;
 }
@@ -383,6 +390,7 @@ td button:last-child:hover {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed; /* This ensures our column widths are respected */
+  font-size: 12px; /* Adjust the font size as needed */
 }
 
 /* Define specific column widths */
@@ -396,12 +404,12 @@ td button:last-child:hover {
 
 .applications-table-section th:nth-child(1), /* Company */
 .applications-table-section td:nth-child(1) {
-  width: 12%;
+  width: 10%;
 }
 
 .applications-table-section th:nth-child(2), /* Position */
 .applications-table-section td:nth-child(2) {
-  width: 32%;
+  width: 27%;
 }
 
 .applications-table-section th:nth-child(3), /* Status */
@@ -424,9 +432,14 @@ td button:last-child:hover {
   width: 15%;
 }
 
-.applications-table-section th:nth-child(7), /* Actions */
+.applications-table-section th:nth-child(7), /* Links */
 .applications-table-section td:nth-child(7) {
   width: 10%;
+}
+
+.applications-table-section th:nth-child(8), /* Actions */
+.applications-table-section td:nth-child(8) {
+  width: 12%;
 }
 
 /* Add tooltip for truncated text */
@@ -534,5 +547,27 @@ td button:last-child:hover {
 .company-filter option,
 .position-filter option {
   padding: 8px;
+}
+
+.links-column {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.links-column div {
+  margin: 2px 0;
+}
+
+.links-column span {
+  color: #888;
+}
+
+.links-column a {
+  color: #4caf50;
+  text-decoration: none;
+}
+
+.links-column a:hover {
+  text-decoration: underline;
 }
  

@@ -1051,6 +1051,7 @@ const ApplicationsTable = ({ onDataChange }) => {
               <th onClick={() => handleSort('salary')}>
                 Salary {sortConfig.key === 'salary' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
               </th>
+              <th>Links</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -1069,6 +1070,32 @@ const ApplicationsTable = ({ onDataChange }) => {
                       {`${app.currency} ${app.salary.toLocaleString()}`}
                     </>
                   ) : ''}
+                </td>
+                <td className="links-column">
+                  {app.url && (
+                    <div>
+                      <span>Listing: </span>
+                      <a href={app.url} target="_blank" rel="noopener noreferrer">Link</a>
+                    </div>
+                  )}
+                  {app.portal_url && (
+                    <div>
+                      <span>Portal: </span>
+                      <a href={app.portal_url} target="_blank" rel="noopener noreferrer">Link</a>
+                    </div>
+                  )}
+                  {app.resume_path && (
+                    <div>
+                      <span>Resume: </span>
+                      <a href={app.resume_path} target="_blank" rel="noopener noreferrer">Link</a>
+                    </div>
+                  )}
+                  {app.cover_letter_path && (
+                    <div>
+                      <span>Cover Letter: </span>
+                      <a href={app.cover_letter_path} target="_blank" rel="noopener noreferrer">Link</a>
+                    </div>
+                  )}
                 </td>
                 <td>
                   <button onClick={() => handleEdit(app)}>Edit</button>
