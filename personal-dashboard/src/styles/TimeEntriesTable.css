@@ -31,4 +31,112 @@
 
 .time-entries-table tfoot td:nth-child(6) {
   text-align: right;
+}
+
+.time-entries-table table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 12px; /* Adjust the font size as needed */
+}
+
+.time-entries-table th,
+.time-entries-table td {
+  padding: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Keep the footer text slightly larger for readability */
+.time-entries-table tfoot {
+  font-size: 13px;
+}
+
+/* Override any parent styling and force table font size */
+.time-entries-table table,
+.time-entries-table th,
+.time-entries-table td,
+.time-entries-table input,
+.time-entries-table select,
+.time-entries-table button {
+  font-size: 12px !important; /* Force override any parent styling */
+}
+
+/* Keep the header text slightly larger */
+.time-entries-table .card-header h2 {
+  font-size: 1.5em !important;
+}
+
+/* Keep the footer totals slightly larger for readability */
+.time-entries-table tfoot {
+  font-size: 13px !important;
+}
+
+/* Force table font size */
+.time-entries-table table,
+.time-entries-table thead th,
+.time-entries-table tbody td,
+.time-entries-table tbody input,
+.time-entries-table tbody select,
+.time-entries-table tbody textarea,
+.time-entries-table tbody button {
+  font-size: 12px !important;
+  font-family: inherit !important;
+}
+
+/* Ensure inputs and textareas in edit mode also have the correct size */
+.time-entries-table input[type="date"],
+.time-entries-table input[type="time"],
+.time-entries-table input[type="number"],
+.time-entries-table textarea {
+  font-size: 12px !important;
+}
+
+/* Keep header and footer sizes */
+.time-entries-table .card-header h2 {
+  font-size: 1.5em !important;
+}
+
+.time-entries-table tfoot td {
+  font-size: 13px !important;
+}
+
+/* Remove any conflicting styles */
+.time-entries-table {
+  font-size: 12px !important;
+}
+
+/* Clear any inherited styles */
+.time-entries-table * {
+  font-size: 12px !important;
+}
+
+/* Try this more specific selector */
+body .time-entries-table table tbody tr td,
+body .time-entries-table table tbody tr td * {
+  font-size: 12px !important;
+}
+
+/* Add a new class for the table content */
+.time-entries-detail-table {
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  font-family: inherit !important;
+}
+
+/* Apply to all elements inside the table */
+.time-entries-detail-table,
+.time-entries-detail-table * {
+  font-size: 12px !important;
+}
+
+/* Target specific elements */
+.time-entries-detail-table td,
+.time-entries-detail-table th,
+.time-entries-detail-table input,
+.time-entries-detail-table select,
+.time-entries-detail-table button,
+.time-entries-detail-table textarea {
+  font-size: 12px !important;
 } 

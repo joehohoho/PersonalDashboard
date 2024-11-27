@@ -290,46 +290,46 @@ function TimeEntriesTable({ refreshTrigger }) {
             </div>
           </div>
 
-          <table>
+          <table style={{ fontSize: '12px' }}>
             <thead>
               <tr>
-                <th 
+                <th style={{ fontSize: '12px' }} 
                   onClick={() => handleColumnSort('date')}
                   className={filters.sortColumn === 'date' ? 'sorted' : ''}
                 >
                   Date {filters.sortColumn === 'date' && (filters.sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th 
+                <th style={{ fontSize: '12px' }} 
                   onClick={() => handleColumnSort('project')}
                   className={filters.sortColumn === 'project' ? 'sorted' : ''}
                 >
                   Project {filters.sortColumn === 'project' && (filters.sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th 
+                <th style={{ fontSize: '12px' }} 
                   onClick={() => handleColumnSort('task')}
                   className={filters.sortColumn === 'task' ? 'sorted' : ''}
                 >
                   Task {filters.sortColumn === 'task' && (filters.sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th 
+                <th style={{ fontSize: '12px' }} 
                   onClick={() => handleColumnSort('start')}
                   className={filters.sortColumn === 'start' ? 'sorted' : ''}
                 >
                   Start {filters.sortColumn === 'start' && (filters.sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th 
+                <th style={{ fontSize: '12px' }} 
                   onClick={() => handleColumnSort('end')}
                   className={filters.sortColumn === 'end' ? 'sorted' : ''}
                 >
                   End {filters.sortColumn === 'end' && (filters.sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th 
+                <th style={{ fontSize: '12px' }} 
                   onClick={() => handleColumnSort('duration')}
                   className={filters.sortColumn === 'duration' ? 'sorted' : ''}
                 >
                   Duration {filters.sortColumn === 'duration' && (filters.sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th 
+                <th style={{ fontSize: '12px' }} 
                   onClick={() => handleColumnSort('description')}
                   className={filters.sortColumn === 'description' ? 'sorted' : ''}
                 >
@@ -344,7 +344,7 @@ function TimeEntriesTable({ refreshTrigger }) {
                   {editingEntry?.id === entry.id ? (
                     // Edit mode
                     <>
-                      <td>
+                      <td style={{ fontSize: '12px' }}>
                         <input
                           type="date"
                           value={editingEntry.work_date}
@@ -354,9 +354,9 @@ function TimeEntriesTable({ refreshTrigger }) {
                           })}
                         />
                       </td>
-                      <td>{entry.tasks?.projects?.name}</td>
-                      <td>{entry.tasks?.name}</td>
-                      <td>
+                      <td style={{ fontSize: '12px' }}>{entry.tasks?.projects?.name}</td>
+                      <td style={{ fontSize: '12px' }}>{entry.tasks?.name}</td>
+                      <td style={{ fontSize: '12px' }}>
                         <input
                           type="time"
                           value={editingEntry.start_time}
@@ -367,7 +367,7 @@ function TimeEntriesTable({ refreshTrigger }) {
                           })}
                         />
                       </td>
-                      <td>
+                      <td style={{ fontSize: '12px' }}>
                         <input
                           type="time"
                           value={editingEntry.end_time}
@@ -378,7 +378,7 @@ function TimeEntriesTable({ refreshTrigger }) {
                           })}
                         />
                       </td>
-                      <td>
+                      <td style={{ fontSize: '12px' }}>
                         <input
                           type="number"
                           step="0.25"
@@ -386,7 +386,7 @@ function TimeEntriesTable({ refreshTrigger }) {
                           readOnly
                         />
                       </td>
-                      <td>
+                      <td style={{ fontSize: '12px' }}>
                         <textarea
                           value={editingEntry.description}
                           onChange={(e) => setEditingEntry({
@@ -402,7 +402,7 @@ function TimeEntriesTable({ refreshTrigger }) {
                           }}
                         />
                       </td>
-                      <td>
+                      <td style={{ fontSize: '12px' }}>
                         <button onClick={() => handleUpdateEntry(editingEntry)}>Save</button>
                         <button onClick={() => setEditingEntry(null)}>Cancel</button>
                       </td>
@@ -410,14 +410,14 @@ function TimeEntriesTable({ refreshTrigger }) {
                   ) : (
                     // View mode
                     <>
-                      <td>{entry.work_date}</td>
-                      <td>{entry.tasks?.projects?.name}</td>
-                      <td>{entry.tasks?.name}</td>
-                      <td>{formatTime(entry.start_time)}</td>
-                      <td>{formatTime(entry.end_time)}</td>
-                      <td>{Number(entry.duration).toFixed(2)}</td>
-                      <td style={{ whiteSpace: 'pre-wrap' }}>{entry.description}</td>
-                      <td>
+                      <td style={{ fontSize: '12px' }}>{entry.work_date}</td>
+                      <td style={{ fontSize: '12px' }}>{entry.tasks?.projects?.name}</td>
+                      <td style={{ fontSize: '12px' }}>{entry.tasks?.name}</td>
+                      <td style={{ fontSize: '12px' }}>{formatTime(entry.start_time)}</td>
+                      <td style={{ fontSize: '12px' }}>{formatTime(entry.end_time)}</td>
+                      <td style={{ fontSize: '12px' }}>{Number(entry.duration).toFixed(2)}</td>
+                      <td style={{ fontSize: '12px', whiteSpace: 'pre-wrap' }}>{entry.description}</td>
+                      <td style={{ fontSize: '12px' }}>
                         <button onClick={() => setEditingEntry(entry)}>Edit</button>
                       </td>
                     </>
