@@ -825,4 +825,16 @@ td button:last-child:hover {
 .status-inactive {
   color: #f44336;  /* Red */
 }
+
+/* Salary cell styling */
+.salary-cell {
+  position: relative;
+  line-height: 1.2;
+}
+
+.bonus-text {
+  font-size: 0.8em;
+  color: #4caf50;
+  margin-top: 2px;
+}
  

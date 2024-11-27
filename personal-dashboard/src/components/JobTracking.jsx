@@ -1190,6 +1190,9 @@ const ApplicationsTable = ({ onDataChange }) => {
                 <td>{app.location}</td>
                 <td className="salary-cell">
                   {formatSalary(app.salary, app.is_salary_listed, app.currency)}
+                  {app.has_bonus && (
+                    <div className="bonus-text">Bonus option</div>
+                  )}
                 </td>
                 <td className="links-column">
                   {app.url && (
