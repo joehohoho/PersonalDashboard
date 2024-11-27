@@ -812,4 +812,17 @@ td button:last-child:hover {
 .description-link:hover {
   text-decoration: underline;
 }
+
+/* Status cell styling */
+.status-cell {
+  font-weight: 500;
+}
+
+.status-active {
+  color: #4caf50;  /* Green */
+}
+
+.status-inactive {
+  color: #f44336;  /* Red */
+}
  

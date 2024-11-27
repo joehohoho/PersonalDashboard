@@ -1179,7 +1179,13 @@ const ApplicationsTable = ({ onDataChange }) => {
               <tr key={app.id}>
                 <td>{app.company}</td>
                 <td>{app.position}</td>
-                <td>{app.status}</td>
+                <td className={`status-cell ${
+                  ['Contacted', 'Applied', 'Interview', 'Offer', 'Accepted'].includes(app.status) 
+                    ? 'status-active' 
+                    : 'status-inactive'
+                }`}>
+                  {app.status}
+                </td>
                 <td>{app.date_applied}</td>
                 <td>{app.location}</td>
                 <td className="salary-cell">
