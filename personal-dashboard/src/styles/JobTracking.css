@@ -182,23 +182,39 @@
 
 .salary-input-group {
   display: flex;
-  gap: 0.5rem;
+  gap: 10px;
+}
+
+.salary-input-group input {
+  flex: 1;
 }
 
 .salary-input-group select {
-  width: 100px;
+  width: auto;
 }
 
-.checkboxes {
-  display: flex;
-  gap: 2rem;
-}
-
-.checkboxes label {
+.form-row.checkboxes {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
+  justify-content: flex-start;
+  margin-bottom: 15px;
+  gap: 0;
+}
+
+.form-row.checkboxes .form-group {
+  flex: 0 0 auto;
+  margin-right: 20px;
+}
+
+.form-row.checkboxes label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.form-row.checkboxes input[type="checkbox"] {
+  margin: 0 5px 0 0;
 }
 
 .file-input-group {

@@ -466,13 +466,12 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
               <label htmlFor="salary">Salary</label>
               <div className="salary-input-group">
                 <input
-                  type="number"
+                  type="text"
                   id="salary"
                   name="salary"
                   value={formData.salary}
                   onChange={handleInputChange}
-                  min="0"
-                  step="1000"
+                  placeholder="Enter salary"
                 />
                 <select
                   name="currency"
