@@ -422,7 +422,7 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
   };
 
   return (
-    <div className="add-application-section">
+    <div className={`add-application-section ${editData ? 'edit-application-form' : ''}`}>
       {!editData && (
         <button 
           className="toggle-form-btn"
@@ -706,6 +706,14 @@ const ApplicationsTable = ({ onDataChange }) => {
   // Add a new state for tracking import status
   const [isImporting, setIsImporting] = useState(false);
 
+  // Add new state for description popup
+  const [descriptionPopup, setDescriptionPopup] = useState({
+    isOpen: false,
+    content: '',
+    position: '',
+    company: ''
+  });
+
   useEffect(() => {
     fetchApplications();
   }, []);
@@ -804,10 +812,16 @@ const ApplicationsTable = ({ onDataChange }) => {
 
   const handleEdit = (application) => {
     setSelectedApplication(application);
-    document.querySelector('.add-application-section')?.scrollIntoView({ 
-      behavior: 'smooth',
-      block: 'start'
-    });
+    // Find the edit form and scroll to it
+    setTimeout(() => {
+      const editForm = document.querySelector('.edit-application-form');
+      if (editForm) {
+        editForm.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    }, 100);
   };
 
   const handleUpdate = () => {
@@ -1035,6 +1049,20 @@ const ApplicationsTable = ({ onDataChange }) => {
 
   return (
     <div className="applications-table-section">
+      {descriptionPopup.isOpen && (
+        <div className="description-popup-overlay" onClick={() => setDescriptionPopup({ isOpen: false, content: '', position: '', company: '' })}>
+          <div className="description-popup" onClick={e => e.stopPropagation()}>
+            <div className="description-popup-header">
+              <h3>{descriptionPopup.position} at {descriptionPopup.company}</h3>
+              <button onClick={() => setDescriptionPopup({ isOpen: false, content: '', position: '', company: '' })}>×</button>
+            </div>
+            <div className="description-popup-content">
+              {descriptionPopup.content || 'No description available.'}
+            </div>
+          </div>
+        </div>
+      )}
+
       {selectedApplication && (
         <AddApplicationForm 
           editData={selectedApplication}
@@ -1142,6 +1170,7 @@ const ApplicationsTable = ({ onDataChange }) => {
                 Salary {sortConfig.key === 'salary' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
               </th>
               <th>Links</th>
+              <th>Desc</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -1193,6 +1222,21 @@ const ApplicationsTable = ({ onDataChange }) => {
                       >Link</a>
                     </div>
                   )}
+                </td>
+                <td>
+                  {app.description ? (
+                    <button 
+                      className="description-link"
+                      onClick={() => setDescriptionPopup({
+                        isOpen: true,
+                        content: app.description,
+                        position: app.position,
+                        company: app.company
+                      })}
+                    >
+                      Desc
+                    </button>
+                  ) : null}
                 </td>
                 <td>
                   <button onClick={() => handleEdit(app)}>Edit</button>

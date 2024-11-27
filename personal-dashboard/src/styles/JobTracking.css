@@ -430,37 +430,42 @@ td button:last-child:hover {
 
 .applications-table-section th:nth-child(2), /* Position */
 .applications-table-section td:nth-child(2) {
-  width: 27%;
+  width: 25%;
 }
 
 .applications-table-section th:nth-child(3), /* Status */
 .applications-table-section td:nth-child(3) {
-  width: 8%;
+  width: 6%;
 }
 
 .applications-table-section th:nth-child(4), /* Date Applied */
 .applications-table-section td:nth-child(4) {
-  width: 10%;
+  width: 8%;
 }
 
 .applications-table-section th:nth-child(5), /* Location */
 .applications-table-section td:nth-child(5) {
-  width: 11%;
+  width: 10%;
 }
 
 .applications-table-section th:nth-child(6), /* Salary */
 .applications-table-section td:nth-child(6) {
-  width: 17%;
+  width: 14%;
 }
 
 .applications-table-section th:nth-child(7), /* Links */
 .applications-table-section td:nth-child(7) {
-  width: 10%;
+  width: 7%;
 }
 
-.applications-table-section th:nth-child(8), /* Actions */
+.applications-table-section th:nth-child(8), /* Description */
 .applications-table-section td:nth-child(8) {
-  width: 10%;
+  width: 5%;
+}
+
+.applications-table-section th:nth-child(9), /* Actions */
+.applications-table-section td:nth-child(9) {
+  width: 7%;
 }
 
 /* Add tooltip for truncated text */
@@ -732,5 +737,79 @@ td button:last-child:hover {
 /* Make sure the salary input doesn't grow */
 .form-group:has(.salary-input-group) {
   flex: 0 0 auto;
+}
+
+/* Description popup styles */
+.description-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.description-popup {
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  position: relative;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+}
+
+.description-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.description-popup-header h3 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.description-popup-header button {
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  color: #888;
+  cursor: pointer;
+  padding: 0 0.5rem;
+}
+
+.description-popup-header button:hover {
+  color: #fff;
+}
+
+.description-popup-content {
+  max-height: calc(80vh - 100px);
+  overflow-y: auto;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+/* Description link button style */
+.description-link {
+  background: none;
+  border: none;
+  color: #4caf50;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 0.9em;
+}
+
+.description-link:hover {
+  text-decoration: underline;
 }
  
