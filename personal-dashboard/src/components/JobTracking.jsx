@@ -248,7 +248,7 @@ const MonthlyChart = ({ data }) => {
   };
 
   return (
-    <div className="chart-container" style={{ height: '240px' }}>
+    <div className="chart-container" style={{ height: '220px' }}>
       <Bar data={chartData} options={options} />
     </div>
   );
