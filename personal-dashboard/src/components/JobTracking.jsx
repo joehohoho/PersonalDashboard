@@ -22,6 +22,8 @@ ChartJS.register(
   Legend
 );
 
+const SERVER_BASE_URL = 'http://localhost:8080';
+
 const MetricsRow = ({ metrics }) => {
   const calculatePercentage = (value) => {
     if (!metrics.total || value === undefined) return '0%';
@@ -306,7 +308,6 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
 
   const handleFileSelect = async (type) => {
     try {
-      // First try to get the file through the picker
       const handle = await window.showOpenFilePicker({
         types: [
           {
@@ -322,16 +323,12 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
       const fileHandle = handle[0];
       const file = await fileHandle.getFile();
       
-      // Hardcoded network share path - replace with your actual path
-      const sharePath = 'C:\\Users\\joe5h\\OneDrive\\Documents\\Personal\\Resume';
-      
-      // Remove any trailing backslashes and create the full UNC path
-      const cleanSharePath = sharePath.replace(/\\+$/, '');
-      const fullUNCPath = `${cleanSharePath}\\${file.name}`;
+      const fileName = file.name;
+      console.log('Selected file:', fileName);
       
       setFormData(prev => ({
         ...prev,
-        [`${type}_path`]: fullUNCPath
+        [`${type}_path`]: fileName
       }));
 
     } catch (err) {
@@ -641,6 +638,18 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
       )}
     </div>
   );
+};
+
+const openFile = (fileName) => {
+  if (!fileName) {
+    console.error('No filename provided');
+    return;
+  }
+
+  const fileUrl = `${SERVER_BASE_URL}/${fileName}`;
+  console.log('Opening file:', fileUrl);
+
+  window.open(fileUrl, '_blank');
 };
 
 const ApplicationsTable = ({ onDataChange }) => {
@@ -1105,13 +1114,25 @@ const ApplicationsTable = ({ onDataChange }) => {
                   {app.resume_path && (
                     <div>
                       <span>Resume: </span>
-                      <a href={app.resume_path} target="_blank" rel="noopener noreferrer">Link</a>
+                      <a 
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          openFile(app.resume_path);
+                        }}
+                      >Link</a>
                     </div>
                   )}
                   {app.cover_letter_path && (
                     <div>
                       <span>Cover Letter: </span>
-                      <a href={app.cover_letter_path} target="_blank" rel="noopener noreferrer">Link</a>
+                      <a 
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          openFile(app.cover_letter_path);
+                        }}
+                      >Link</a>
                     </div>
                   )}
                 </td>
