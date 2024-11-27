@@ -970,6 +970,20 @@ const ApplicationsTable = ({ onDataChange }) => {
     return matchesCompany && matchesPosition && matchesStatus;
   });
 
+  // Sort the applications based on the current sort configuration
+  const sortedApplications = [...filteredApplications].sort((a, b) => {
+    const aValue = a[sortConfig.key];
+    const bValue = b[sortConfig.key];
+
+    if (aValue < bValue) {
+      return sortConfig.direction === 'asc' ? -1 : 1;
+    }
+    if (aValue > bValue) {
+      return sortConfig.direction === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+
   return (
     <div className="applications-table-section">
       {selectedApplication && (
@@ -1083,21 +1097,14 @@ const ApplicationsTable = ({ onDataChange }) => {
             </tr>
           </thead>
           <tbody>
-            {filteredApplications.map(app => (
+            {sortedApplications.map(app => (
               <tr key={app.id}>
                 <td>{app.company}</td>
                 <td>{app.position}</td>
                 <td>{app.status}</td>
                 <td>{app.date_applied}</td>
                 <td>{app.location}</td>
-                <td>
-                  {app.salary ? (
-                    <>
-                      {app.is_salary_listed && 'Listed: '}
-                      {`${app.currency} ${app.salary.toLocaleString()}`}
-                    </>
-                  ) : ''}
-                </td>
+                <td>{app.salary}</td>
                 <td className="links-column">
                   {app.url && (
                     <div>
