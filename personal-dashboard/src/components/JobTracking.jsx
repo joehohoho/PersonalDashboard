@@ -599,8 +599,11 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
                 <button 
                   type="button"
                   onClick={() => handleFileSelect('resume')}
+                  title="Select File"
                 >
-                  Select File
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
+                    <path d="M2 13.5V2.5A1.5 1.5 0 0 1 3.5 1h2.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 3H12.5A1.5 1.5 0 0 1 14 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5z"/>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -620,8 +623,11 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
                 <button 
                   type="button"
                   onClick={() => handleFileSelect('cover_letter')}
+                  title="Select File"
                 >
-                  Select File
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
+                    <path d="M2 13.5V2.5A1.5 1.5 0 0 1 3.5 1h2.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 3H12.5A1.5 1.5 0 0 1 14 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5z"/>
+                  </svg>
                 </button>
               </div>
             </div>
