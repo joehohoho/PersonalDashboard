@@ -300,6 +300,13 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+    
+    if (name === 'salary') {
+      // Allow numbers, commas, dashes, spaces, and dollar signs
+      const isValidInput = /^[$\d,\s-]*$/.test(value);
+      if (!isValidInput && value !== '') return;
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -341,12 +348,33 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Parse salary range before submitting
+    const parseSalary = (salaryString) => {
+      if (!salaryString) return null;
+      
+      // Remove $ and commas, trim whitespace
+      const cleaned = salaryString.toString().replace(/[$,]/g, '').trim();
+      
+      // Check for range format (e.g., "100000 - 120000")
+      const rangeMatch = cleaned.match(/(\d+)\s*[-–]\s*(\d+)/);
+      
+      if (rangeMatch) {
+        const min = parseFloat(rangeMatch[1]);
+        const max = parseFloat(rangeMatch[2]);
+        return `${min}-${max}`; // Store as "min-max" format
+      }
+      
+      // Single number
+      const value = parseFloat(cleaned);
+      return isNaN(value) ? null : value;
+    };
+
     if (editData) {
       const { data, error } = await supabase
         .from('job_applications')
         .update({
           ...formData,
-          salary: formData.salary ? Number(formData.salary) : null,
+          salary: parseSalary(formData.salary),
         })
         .eq('id', editData.id);
 
@@ -361,7 +389,7 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
         .from('job_applications')
         .insert([{
           ...formData,
-          salary: formData.salary ? Number(formData.salary) : null,
+          salary: parseSalary(formData.salary),
         }]);
 
       if (error) {
@@ -983,6 +1011,34 @@ const ApplicationsTable = ({ onDataChange }) => {
     return 0;
   });
 
+  const formatSalary = (salaryValue) => {
+    if (!salaryValue) return '';
+    
+    // Check if it's a range (stored as "min-max")
+    const rangeMatch = String(salaryValue).match(/(\d+)-(\d+)/);
+    
+    if (rangeMatch) {
+      const min = parseInt(rangeMatch[1]).toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0
+      });
+      const max = parseInt(rangeMatch[2]).toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0
+      });
+      return `${min} - ${max}`;
+    }
+    
+    // Single value
+    return parseInt(salaryValue).toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0
+    });
+  };
+
   return (
     <div className="applications-table-section">
       {selectedApplication && (
@@ -1103,7 +1159,7 @@ const ApplicationsTable = ({ onDataChange }) => {
                 <td>{app.status}</td>
                 <td>{app.date_applied}</td>
                 <td>{app.location}</td>
-                <td>{app.salary}</td>
+                <td>{formatSalary(app.salary)}</td>
                 <td className="links-column">
                   {app.url && (
                     <div>
