@@ -458,6 +458,17 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
                 required
               />
             </div>
+
+            <div className="form-group">
+              <label htmlFor="location">Location</label>
+              <input
+                type="text"
+                id="location"
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
+              />
+            </div>
           </div>
 
           <div className="form-row">
@@ -487,9 +498,7 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
                 required
               />
             </div>
-          </div>
 
-          <div className="form-row">
             <div className="form-group">
               <label htmlFor="salary">Salary</label>
               <div className="salary-input-group">
@@ -513,53 +522,40 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
               </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="location">Location</label>
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
-
-          <div className="form-row checkboxes">
-            <div className="form-group">
-              <label>
-                <input
-                  type="checkbox"
-                  name="has_interview"
-                  checked={formData.has_interview}
-                  onChange={handleInputChange}
-                />
-                Interview Stage
-              </label>
-            </div>
-
-            <div className="form-group">
-              <label>
-                <input
-                  type="checkbox"
-                  name="is_salary_listed"
-                  checked={formData.is_salary_listed}
-                  onChange={handleInputChange}
-                />
-                Salary Listed
-              </label>
-            </div>
-
-            <div className="form-group">
-              <label>
-                <input
-                  type="checkbox"
-                  name="has_bonus"
-                  checked={formData.has_bonus}
-                  onChange={handleInputChange}
-                />
-                Has Bonus
-              </label>
+            <div className="form-group checkbox-stack">
+              <div className="checkbox-item">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="is_salary_listed"
+                    checked={formData.is_salary_listed}
+                    onChange={handleInputChange}
+                  />
+                  Salary Listed
+                </label>
+              </div>
+              <div className="checkbox-item">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="has_bonus"
+                    checked={formData.has_bonus}
+                    onChange={handleInputChange}
+                  />
+                  Has Bonus
+                </label>
+              </div>
+              <div className="checkbox-item">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="has_interview"
+                    checked={formData.has_interview}
+                    onChange={handleInputChange}
+                  />
+                  Interview Stage
+                </label>
+              </div>
             </div>
           </div>
 

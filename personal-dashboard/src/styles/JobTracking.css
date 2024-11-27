@@ -127,7 +127,7 @@
 
 .toggle-form-btn {
   width: 100%;
-  padding: 1rem;
+  padding: 1rem 2rem;
   background: none;
   border: none;
   color: #ffffff;
@@ -141,13 +141,13 @@
 }
 
 .application-form {
-  padding: 1rem;
+  padding: 1rem 2rem;
   border-top: 1px solid var(--border-color);
 }
 
 .form-row {
   display: flex;
-  gap: 1rem;
+  gap: 0;
   margin-bottom: 1rem;
 }
 
@@ -616,5 +616,121 @@ td button:last-child:hover {
 .applications-table-section td:first-child,
 .applications-table-section th:first-child {
   padding-left: 8px;
+}
+
+/* Add spacing between form groups */
+.form-row .form-group {
+  margin-right: 2rem;  /* Add default right margin */
+}
+
+.form-row .form-group:last-child {
+  margin-right: 0;  /* Remove margin from last group in row */
+}
+
+/* Add specific spacing for form groups containing these inputs */
+.form-group input[name="company"],
+.form-group input[name="url"] {
+  margin-right: 2rem;
+}
+
+/* Remove margin for salary input group */
+.salary-input-group .form-group {
+  margin-right: 10px;
+}
+
+/* Ensure form row gap doesn't conflict */
+.form-row {
+  display: flex;
+  margin-bottom: 1rem;
+}
+
+/* Update form group select styling */
+.form-group select {
+  width: auto;  /* Override the 100% width */
+  min-width: fit-content;  /* Ensure it fits the content */
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+/* Keep other input types at full width */
+.form-group input[type="text"],
+.form-group input[type="url"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+/* Target status dropdown specifically */
+.form-group select[name="status"] {
+  width: auto !important;  /* Force override */
+  min-width: min-content !important;
+  max-width: max-content !important;
+}
+
+/* If the above doesn't work, we might need this more aggressive approach */
+.form-group select[name="status"] {
+  width: fit-content !important;
+  min-width: 0 !important;
+  flex: 0 1 auto !important;
+}
+
+/* Target the date input specifically */
+.form-group input[type="date"] {
+  width: auto;  /* Override the 100% width */
+  min-width: fit-content;
+}
+
+/* Adjust spacing between status and date */
+.form-row .form-group + .form-group {
+  margin-left: 1rem;  /* Reduce space between form groups */
+}
+
+/* Target status and date fields specifically */
+.form-group select[name="status"],
+.form-group input[name="date_applied"] {
+  width: auto !important;
+  min-width: fit-content !important;
+}
+
+/* Remove any flex-grow from these specific form groups */
+.form-row .form-group:has(select[name="status"]),
+.form-row .form-group:has(input[name="date_applied"]) {
+  flex: 0 0 auto;
+}
+
+/* Adjust spacing between form groups in the status/date/salary row */
+.form-row .form-group + .form-group {
+  margin-left: 1rem;
+}
+
+/* Ensure the salary input group doesn't grow too wide */
+.form-group .salary-input-group {
+  display: flex;
+  gap: 10px;
+  width: auto;
+  min-width: fit-content;
+}
+
+.salary-input-group input {
+  width: 140px;  /* Reduced width to fit "1,000,000 - 1,000,000" */
+}
+
+.salary-input-group select {
+  width: auto;
+  min-width: fit-content;
+}
+
+/* Make sure the salary input doesn't grow */
+.form-group:has(.salary-input-group) {
+  flex: 0 0 auto;
 }
  
