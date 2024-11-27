@@ -837,4 +837,32 @@ td button:last-child:hover {
   color: #4caf50;
   margin-top: 2px;
 }
+
+/* Action buttons styling */
+.action-buttons {
+  white-space: nowrap;
+}
+
+.action-buttons button {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  color: #888;
+}
+
+.action-buttons button:hover {
+  opacity: 0.8;
+  background: none !important;
+  color: #fff;
+}
+
+/* Remove the existing button background colors */
+.action-buttons button:first-child,
+.action-buttons button:first-child:hover,
+.action-buttons button:last-child,
+.action-buttons button:last-child:hover {
+  background: none;
+}
  
