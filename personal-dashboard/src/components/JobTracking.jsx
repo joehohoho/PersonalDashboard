@@ -1011,32 +1011,29 @@ const ApplicationsTable = ({ onDataChange }) => {
     return 0;
   });
 
-  const formatSalary = (salaryValue) => {
+  const formatSalary = (salaryValue, isListed) => {
     if (!salaryValue) return '';
     
     // Check if it's a range (stored as "min-max")
     const rangeMatch = String(salaryValue).match(/(\d+)-(\d+)/);
     
-    if (rangeMatch) {
-      const min = parseInt(rangeMatch[1]).toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        maximumFractionDigits: 0
-      });
-      const max = parseInt(rangeMatch[2]).toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        maximumFractionDigits: 0
-      });
-      return `${min} - ${max}`;
-    }
+    const formattedValue = rangeMatch
+      ? `${parseInt(rangeMatch[1]).toLocaleString('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          maximumFractionDigits: 0
+        })} - ${parseInt(rangeMatch[2]).toLocaleString('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          maximumFractionDigits: 0
+        })}`
+      : parseInt(salaryValue).toLocaleString('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          maximumFractionDigits: 0
+        });
     
-    // Single value
-    return parseInt(salaryValue).toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0
-    });
+    return isListed ? `Listed: ${formattedValue}` : formattedValue;
   };
 
   return (
@@ -1159,7 +1156,7 @@ const ApplicationsTable = ({ onDataChange }) => {
                 <td>{app.status}</td>
                 <td>{app.date_applied}</td>
                 <td>{app.location}</td>
-                <td>{formatSalary(app.salary)}</td>
+                <td>{formatSalary(app.salary, app.is_salary_listed)}</td>
                 <td className="links-column">
                   {app.url && (
                     <div>
