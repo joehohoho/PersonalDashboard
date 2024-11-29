@@ -523,20 +523,29 @@ function TimeEntry({ refreshTrigger }) {
   };
 
   const fetchWeekEfficiency = async () => {
-    const { data: timeEntries, error } = await supabase
+    // Get current date and start of week
+    const today = new Date();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
+    weekStart.setHours(0, 0, 0, 0);
+
+    // Get end of week
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    const { data, error } = await supabase
       .from('time_entries')
-      .select('work_date, duration');
+      .select('work_date, duration')
+      .gte('work_date', weekStart.toISOString().split('T')[0])
+      .lte('work_date', weekEnd.toISOString().split('T')[0]);
 
     if (error) {
       console.error('Error fetching week efficiency:', error);
       return;
     }
 
-    // Get current week's dates
-    const today = new Date();
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
-    
+    // Create an object to store daily totals
     const weekData = [];
     for (let i = 0; i < 7; i++) {
       const currentDate = new Date(weekStart);
@@ -549,7 +558,7 @@ function TimeEntry({ refreshTrigger }) {
       const targetHours = isWeekend ? 0 : 8;
       
       // Calculate actual hours
-      const actualHours = timeEntries
+      const actualHours = data
         .filter(entry => entry.work_date === dateString)
         .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
       
@@ -562,7 +571,7 @@ function TimeEntry({ refreshTrigger }) {
       weekData.push({
         day: currentDate.toLocaleString('en-US', { weekday: 'short' }),
         efficiency: Number(efficiencyValue.toFixed(1)),
-        actual: actualHours,
+        actual: Number(actualHours.toFixed(2)),
         target: targetHours
       });
     }
@@ -813,7 +822,7 @@ function TimeEntry({ refreshTrigger }) {
             const data = weekEfficiency[dataIndex];
             return [
               `Efficiency: ${data.efficiency}%`,
-              `Actual: ${data.actual.toFixed(1)}hrs`,
+              `Actual: ${data.actual}hrs`,
               `Target: ${data.target}hrs`
             ];
           }
