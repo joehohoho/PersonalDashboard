@@ -8,13 +8,12 @@ function TransactionForm({ refreshTrigger, setRefreshTrigger }) {
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
-    type_id: '',
+    transaction_type_id: '',
     transaction_date: '',
     payment_method_id: '',
-    details: ''
+    detailed_description: ''
   });
 
-  // Fetch transaction types and payment methods from database
   useEffect(() => {
     const fetchFormData = async () => {
       const { data: types } = await supabase
@@ -32,7 +31,7 @@ function TransactionForm({ refreshTrigger, setRefreshTrigger }) {
     };
 
     fetchFormData();
-  }, []);
+  }, [refreshTrigger]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,10 +41,10 @@ function TransactionForm({ refreshTrigger, setRefreshTrigger }) {
       .insert([{
         description: formData.description,
         amount: parseFloat(formData.amount),
-        type_id: formData.type_id,
+        transaction_type_id: formData.transaction_type_id || null,
         transaction_date: formData.transaction_date,
-        payment_method_id: formData.payment_method_id,
-        details: formData.details
+        payment_method_id: formData.payment_method_id || null,
+        detailed_description: formData.detailed_description || null
       }])
       .select();
 
@@ -55,10 +54,10 @@ function TransactionForm({ refreshTrigger, setRefreshTrigger }) {
       setFormData({
         description: '',
         amount: '',
-        type_id: '',
+        transaction_type_id: '',
         transaction_date: '',
         payment_method_id: '',
-        details: ''
+        detailed_description: ''
       });
       setRefreshTrigger(prev => prev + 1);
     }
@@ -102,9 +101,8 @@ function TransactionForm({ refreshTrigger, setRefreshTrigger }) {
             <label htmlFor="type">Transaction Type</label>
             <select
               id="type"
-              value={formData.type_id}
-              onChange={(e) => setFormData({ ...formData, type_id: e.target.value })}
-              required
+              value={formData.transaction_type_id}
+              onChange={(e) => setFormData({ ...formData, transaction_type_id: e.target.value })}
             >
               <option value="">Select Type</option>
               {transactionTypes.map(type => (
@@ -130,7 +128,6 @@ function TransactionForm({ refreshTrigger, setRefreshTrigger }) {
               id="paymentMethod"
               value={formData.payment_method_id}
               onChange={(e) => setFormData({ ...formData, payment_method_id: e.target.value })}
-              required
             >
               <option value="">Select Payment Method</option>
               {paymentMethods.map(method => (
@@ -143,8 +140,8 @@ function TransactionForm({ refreshTrigger, setRefreshTrigger }) {
             <label htmlFor="details">Detail Description</label>
             <textarea
               id="details"
-              value={formData.details}
-              onChange={(e) => setFormData({ ...formData, details: e.target.value })}
+              value={formData.detailed_description}
+              onChange={(e) => setFormData({ ...formData, detailed_description: e.target.value })}
               rows="3"
             />
           </div>
