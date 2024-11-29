@@ -397,7 +397,7 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
         return;
       }
 
-      onApplicationAdded();
+      await onApplicationAdded();
     }
 
     setFormData({
