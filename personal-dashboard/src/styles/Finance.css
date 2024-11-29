@@ -14,12 +14,13 @@
   grid-template-areas: 
     "upcoming upcoming"
     "bills form";
-  grid-template-columns: minmax(400px, 550px) 400px;
-  grid-template-rows: auto 1fr;
-  gap: 1rem;
+  grid-template-columns: 550px 400px;
+  grid-template-rows: auto auto;
+  gap: 2rem;
   padding: 0 1.75rem;
   max-width: 1200px;
   margin: 0 auto;
+  justify-content: start;
 }
 
 .upcoming-bills-card {
@@ -39,13 +40,22 @@
   grid-area: bills;
   width: 100%;
   max-width: 550px;
+  margin-top: 1rem;
+  margin-right: auto;
+  margin-left: 0;
 }
 
 .bill-form-card {
   grid-area: form;
   width: 400px;
-  position: relative;
-  top: 0;
+  padding: 20px;
+  margin-left: 2rem;
+  margin-top: 1rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: white;
+  align-self: start;
 }
 
 .card-header {
