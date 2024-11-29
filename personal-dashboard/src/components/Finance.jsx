@@ -5,6 +5,7 @@ import UpcomingBills from './UpcomingBills';
 import TransactionForm from './TransactionForm';
 import TransactionTypeForm from './TransactionTypeForm';
 import PaymentMethodForm from './PaymentMethodForm';
+import TransactionTable from './TransactionTable';
 import '../styles/Finance.css';
 
 function Finance() {
@@ -16,6 +17,7 @@ function Finance() {
   });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [editingTransaction, setEditingTransaction] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +49,16 @@ function Finance() {
     <div className="finance">
       <div className="finance-content">
         <UpcomingBills refreshTrigger={refreshTrigger} />
-        <TransactionForm refreshTrigger={refreshTrigger} setRefreshTrigger={setRefreshTrigger} />
+        <TransactionForm 
+          refreshTrigger={refreshTrigger} 
+          setRefreshTrigger={setRefreshTrigger}
+          editingTransaction={editingTransaction}
+          setEditingTransaction={setEditingTransaction}
+        />
+        <TransactionTable 
+          refreshTrigger={refreshTrigger} 
+          setEditingTransaction={setEditingTransaction}
+        />
         <BillsTable refreshTrigger={refreshTrigger} />
         <div className="bill-form-card">
           <div className="card-header" onClick={() => setIsFormOpen(!isFormOpen)}>

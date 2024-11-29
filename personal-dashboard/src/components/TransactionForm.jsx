@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
 
-function TransactionForm({ refreshTrigger, setRefreshTrigger }) {
+function TransactionForm({ refreshTrigger, setRefreshTrigger, editingTransaction, setEditingTransaction }) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [transactionTypes, setTransactionTypes] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -13,6 +13,21 @@ function TransactionForm({ refreshTrigger, setRefreshTrigger }) {
     payment_method_id: '',
     detailed_description: ''
   });
+
+  // Load editing transaction data into form
+  useEffect(() => {
+    if (editingTransaction) {
+      setFormData({
+        description: editingTransaction.description,
+        amount: editingTransaction.amount,
+        transaction_type_id: editingTransaction.transaction_type_id || '',
+        transaction_date: editingTransaction.transaction_date,
+        payment_method_id: editingTransaction.payment_method_id || '',
+        detailed_description: editingTransaction.detailed_description || ''
+      });
+      setIsFormOpen(true);
+    }
+  }, [editingTransaction]);
 
   useEffect(() => {
     const fetchFormData = async () => {
@@ -36,17 +51,29 @@ function TransactionForm({ refreshTrigger, setRefreshTrigger }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const { data, error } = await supabase
-      .from('transactions')
-      .insert([{
-        description: formData.description,
-        amount: parseFloat(formData.amount),
-        transaction_type_id: formData.transaction_type_id || null,
-        transaction_date: formData.transaction_date,
-        payment_method_id: formData.payment_method_id || null,
-        detailed_description: formData.detailed_description || null
-      }])
-      .select();
+    const transactionData = {
+      description: formData.description,
+      amount: parseFloat(formData.amount),
+      transaction_type_id: formData.transaction_type_id || null,
+      transaction_date: formData.transaction_date,
+      payment_method_id: formData.payment_method_id || null,
+      detailed_description: formData.detailed_description || null
+    };
+
+    let error;
+    
+    if (editingTransaction) {
+      const { error: updateError } = await supabase
+        .from('transactions')
+        .update(transactionData)
+        .eq('id', editingTransaction.id);
+      error = updateError;
+    } else {
+      const { error: insertError } = await supabase
+        .from('transactions')
+        .insert([transactionData]);
+      error = insertError;
+    }
 
     if (error) {
       console.error('Error saving transaction:', error);
@@ -59,6 +86,7 @@ function TransactionForm({ refreshTrigger, setRefreshTrigger }) {
         payment_method_id: '',
         detailed_description: ''
       });
+      setEditingTransaction(null);
       setRefreshTrigger(prev => prev + 1);
     }
   };
@@ -66,7 +94,7 @@ function TransactionForm({ refreshTrigger, setRefreshTrigger }) {
   return (
     <div className="transaction-form-card">
       <div className="card-header" onClick={() => setIsFormOpen(!isFormOpen)}>
-        <h3>New Transaction</h3>
+        <h3>{editingTransaction ? 'Edit Transaction' : 'New Transaction'}</h3>
         <button className="collapse-btn">
           {isFormOpen ? '▼' : '▶'}
         </button>
@@ -146,7 +174,30 @@ function TransactionForm({ refreshTrigger, setRefreshTrigger }) {
             />
           </div>
 
-          <button type="submit" className="submit-btn">Save Transaction</button>
+          <div className="form-actions">
+            <button type="submit" className="submit-btn">
+              {editingTransaction ? 'Update Transaction' : 'Save Transaction'}
+            </button>
+            {editingTransaction && (
+              <button 
+                type="button" 
+                className="cancel-btn"
+                onClick={() => {
+                  setEditingTransaction(null);
+                  setFormData({
+                    description: '',
+                    amount: '',
+                    transaction_type_id: '',
+                    transaction_date: '',
+                    payment_method_id: '',
+                    detailed_description: ''
+                  });
+                }}
+              >
+                Cancel Edit
+              </button>
+            )}
+          </div>
         </form>
       )}
     </div>
