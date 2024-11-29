@@ -1,8 +1,9 @@
 .bills-table {
   margin-top: 1rem;
   background: var(--card-bg);
-  border-radius: var(--border-radius);
-  padding: 1rem;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .bills-table table {
