@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import TimeEntry from './components/TimeEntry'
 import JobTracking from './components/JobTracking'
+import Finance from './components/Finance'
 import './styles/Dashboard.css'
 
 function App() {
@@ -13,6 +14,8 @@ function App() {
         return <TimeEntry />;
       case 'jobTracking':
         return <JobTracking />;
+      case 'finance':
+        return <Finance />;
       default:
         return (
           <div className="dashboard">
@@ -46,7 +49,11 @@ function App() {
             <span className="nav-icon">📊</span>
             <span className="nav-text">Dashboard</span>
           </a>
-          <a href="#" className="nav-item">
+          <a 
+            href="#" 
+            className={`nav-item ${currentPage === 'finance' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('finance')}
+          >
             <span className="nav-icon">💰</span>
             <span className="nav-text">Finances</span>
           </a>
