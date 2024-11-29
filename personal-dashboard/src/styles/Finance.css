@@ -26,7 +26,8 @@
   grid-area: upcoming;
   width: 100%;
   max-width: 550px;
-  margin: 0 auto;
+  margin-right: auto;
+  margin-left: 0;
   padding: 20px;
   background: var(--card-bg);
   border-radius: 12px;
