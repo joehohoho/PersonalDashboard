@@ -125,6 +125,10 @@ function TimeEntry({ refreshTrigger }) {
     fetchAllData();
   }, [timeEntryUpdates, refreshTrigger]);
 
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
   const fetchProjects = async () => {
     console.log('Fetching open projects for TimeEntry...');
     const { data, error } = await supabase
@@ -871,6 +875,14 @@ function TimeEntry({ refreshTrigger }) {
     return new Date().toLocaleString('en-US', { weekday: 'short' });
   };
 
+  // Update the task form section to fetch projects when opened
+  const handleTaskFormToggle = () => {
+    setIsTaskFormOpen(!isTaskFormOpen);
+    if (!isTaskFormOpen) {
+      fetchProjects(); // Fetch projects when opening the form
+    }
+  };
+
   return (
     <div className="dashboard">
       {/* Add metrics cards at the top */}
@@ -1085,7 +1097,7 @@ function TimeEntry({ refreshTrigger }) {
 
         {/* Task Creation Card */}
         <div className="entry-card">
-          <div className="card-header" onClick={() => setIsTaskFormOpen(!isTaskFormOpen)}>
+          <div className="card-header" onClick={handleTaskFormToggle}>
             <h2>Create New Task</h2>
             <button className="collapse-btn">
               {isTaskFormOpen ? '▼' : '▶'}
