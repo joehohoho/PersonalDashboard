@@ -10,7 +10,7 @@ function BillsTable({ refreshTrigger }) {
     sortDirection: 'asc'
   });
   const [editingBill, setEditingBill] = useState(null);
-  const [isTableOpen, setIsTableOpen] = useState(true);
+  const [isTableOpen, setIsTableOpen] = useState(false);
 
   useEffect(() => {
     fetchBills();
@@ -97,7 +97,7 @@ function BillsTable({ refreshTrigger }) {
   return (
     <div className="bills-table">
       <div className="card-header" onClick={() => setIsTableOpen(!isTableOpen)}>
-        <h2>Bills</h2>
+        <h3>Bills</h3>
         <button className="collapse-btn">
           {isTableOpen ? '▼' : '▶'}
         </button>

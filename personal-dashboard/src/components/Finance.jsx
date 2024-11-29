@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { supabase } from '../config/supabase';
 import BillsTable from './BillsTable';
 import UpcomingBills from './UpcomingBills';
+import TransactionForm from './TransactionForm';
+import TransactionTypeForm from './TransactionTypeForm';
+import PaymentMethodForm from './PaymentMethodForm';
 import '../styles/Finance.css';
 
 function Finance() {
@@ -11,7 +14,7 @@ function Finance() {
     frequency: 'monthly',
     bill_date: ''
   });
-  const [isFormOpen, setIsFormOpen] = useState(true);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleSubmit = async (e) => {
@@ -44,6 +47,7 @@ function Finance() {
     <div className="finance">
       <div className="finance-content">
         <UpcomingBills refreshTrigger={refreshTrigger} />
+        <TransactionForm refreshTrigger={refreshTrigger} setRefreshTrigger={setRefreshTrigger} />
         <BillsTable refreshTrigger={refreshTrigger} />
         <div className="bill-form-card">
           <div className="card-header" onClick={() => setIsFormOpen(!isFormOpen)}>
@@ -109,6 +113,8 @@ function Finance() {
             </form>
           )}
         </div>
+        <TransactionTypeForm refreshTrigger={refreshTrigger} setRefreshTrigger={setRefreshTrigger} />
+        <PaymentMethodForm refreshTrigger={refreshTrigger} setRefreshTrigger={setRefreshTrigger} />
       </div>
     </div>
   );
