@@ -36,7 +36,7 @@ function TimeEntriesTable({ refreshTrigger }) {
   const [editingEntry, setEditingEntry] = useState(null);
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
-  const [isTableOpen, setIsTableOpen] = useState(false);
+  const [isTableOpen, setIsTableOpen] = useState(true);
 
   useEffect(() => {
     fetchTimeEntries();
@@ -54,7 +54,8 @@ function TimeEntriesTable({ refreshTrigger }) {
           project_id,
           projects (
             id,
-            name
+            name,
+            status
           )
         )
       `)
@@ -68,15 +69,30 @@ function TimeEntriesTable({ refreshTrigger }) {
   }
 
   async function fetchProjects() {
-    const { data, error } = await supabase
+    const { data: timeEntryData, error: timeEntryError } = await supabase
+      .from('time_entries')
+      .select('tasks(project_id)')
+      .not('tasks', 'is', null);
+
+    if (timeEntryError) {
+      console.error('Error fetching time entry projects:', timeEntryError);
+      return;
+    }
+
+    const projectIds = [...new Set(timeEntryData
+      .map(entry => entry.tasks?.project_id)
+      .filter(id => id != null))];
+
+    const { data: projectsData, error: projectsError } = await supabase
       .from('projects')
       .select('*')
+      .in('id', projectIds)
       .order('name');
 
-    if (error) {
-      console.error('Error fetching projects:', error);
+    if (projectsError) {
+      console.error('Error fetching projects:', projectsError);
     } else {
-      setProjects(data);
+      setProjects(projectsData);
     }
   }
 
@@ -210,7 +226,6 @@ function TimeEntriesTable({ refreshTrigger }) {
                   <option 
                     key={project.id} 
                     value={project.id}
-                    disabled={project.status === 'closed'}
                   >
                     {project.name} {project.status === 'closed' ? '(Closed)' : ''}
                   </option>
