@@ -4,12 +4,19 @@
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  min-width: 500px;
+}
+
+.table-content {
+  min-height: 400px;
 }
 
 .bills-table table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
+  table-layout: fixed;
 }
 
 .bills-table th,
@@ -88,4 +95,29 @@
   color: var(--text-primary);
   cursor: pointer;
   font-size: 1.2rem;
+}
+
+.bills-table th:nth-child(1),
+.bills-table td:nth-child(1) {
+  width: 35%;
+}
+
+.bills-table th:nth-child(2),
+.bills-table td:nth-child(2) {
+  width: 15%;
+}
+
+.bills-table th:nth-child(3),
+.bills-table td:nth-child(3) {
+  width: 20%;
+}
+
+.bills-table th:nth-child(4),
+.bills-table td:nth-child(4) {
+  width: 20%;
+}
+
+.bills-table th:nth-child(5),
+.bills-table td:nth-child(5) {
+  width: 10%;
 } 

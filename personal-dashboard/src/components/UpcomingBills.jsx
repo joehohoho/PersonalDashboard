@@ -110,7 +110,7 @@ function UpcomingBills({ refreshTrigger }) {
   };
 
   return (
-    <div className="bill-form-card">
+    <div className="upcoming-bills-card">
       <h3>Upcoming Bills</h3>
       <table className="upcoming-bills-table">
         <thead>
@@ -118,7 +118,7 @@ function UpcomingBills({ refreshTrigger }) {
             <th>Bill Name</th>
             <th>Amount</th>
             <th>Due Date</th>
-            <th>Due In</th>
+            <th style={{ textAlign: 'center' }}>Due In</th>
             <th>Frequency</th>
           </tr>
         </thead>
@@ -128,7 +128,7 @@ function UpcomingBills({ refreshTrigger }) {
               <td>{bill.name}</td>
               <td>${bill.amount.toFixed(2)}</td>
               <td>{formatDate(bill.nextDueDate)}</td>
-              <td>{calculateDaysUntil(bill.nextDueDate)}</td>
+              <td style={{ textAlign: 'center' }}>{calculateDaysUntil(bill.nextDueDate)}</td>
               <td>{bill.frequency}</td>
             </tr>
           ))}

@@ -44,7 +44,7 @@ function Finance() {
     <div className="finance">
       <div className="finance-content">
         <UpcomingBills refreshTrigger={refreshTrigger} />
-        
+        <BillsTable refreshTrigger={refreshTrigger} />
         <div className="bill-form-card">
           <div className="card-header" onClick={() => setIsFormOpen(!isFormOpen)}>
             <h3>Add New Bill</h3>
@@ -109,8 +109,6 @@ function Finance() {
             </form>
           )}
         </div>
-
-        <BillsTable refreshTrigger={refreshTrigger} />
       </div>
     </div>
   );

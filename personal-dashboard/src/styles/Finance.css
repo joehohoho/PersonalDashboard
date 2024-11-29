@@ -2,6 +2,7 @@
   padding-top: 0.5rem;
   padding-left: 0;
   padding-right: 0;
+  min-height: 100vh;
 }
 
 .finance h2 {
@@ -9,26 +10,41 @@
 }
 
 .finance-content {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-areas: 
+    "upcoming upcoming"
+    "bills form";
+  grid-template-columns: minmax(400px, 550px) 400px;
+  grid-template-rows: auto 1fr;
   gap: 1rem;
   padding: 0 1.75rem;
-  max-width: calc(100% - 2.75rem);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.bill-form-card {
+.upcoming-bills-card {
+  grid-area: upcoming;
+  width: 100%;
+  max-width: 550px;
+  margin: 0 auto;
+  padding: 20px;
   background: var(--card-bg);
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: white;
 }
 
 .bills-table {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  grid-area: bills;
+  width: 100%;
+  max-width: 550px;
+}
+
+.bill-form-card {
+  grid-area: form;
+  width: 400px;
+  position: relative;
+  top: 0;
 }
 
 .card-header {
@@ -96,19 +112,12 @@
   background: var(--primary-color-dark);
 }
 
-.upcoming-bills-card {
-  background: #1a1a1a;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  color: white;
-}
-
 .upcoming-bills-table {
   width: 100%;
+  max-width: 700px;
   border-collapse: collapse;
   margin-top: 15px;
+  table-layout: fixed;
 }
 
 .upcoming-bills-table th,
@@ -128,7 +137,28 @@
   background-color: #2d2d2d;
 }
 
+.upcoming-bills-table th:nth-child(1),
+.upcoming-bills-table td:nth-child(1) {  /* Bill Name */
+  width: 32%;
+}
+
+.upcoming-bills-table th:nth-child(2),
+.upcoming-bills-table td:nth-child(2) {  /* Amount */
+  width: 15%;
+}
+
+.upcoming-bills-table th:nth-child(3),
+.upcoming-bills-table td:nth-child(3) {  /* Due Date */
+  width: 20%;
+}
+
 .upcoming-bills-table th:nth-child(4),
-.upcoming-bills-table td:nth-child(4) {
+.upcoming-bills-table td:nth-child(4) {  /* Due In */
+  width: 13%;
   text-align: center;
+}
+
+.upcoming-bills-table th:nth-child(5),
+.upcoming-bills-table td:nth-child(5) {  /* Frequency */
+  width: 20%;
 } 
