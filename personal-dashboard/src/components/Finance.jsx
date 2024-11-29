@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../config/supabase';
 import BillsTable from './BillsTable';
+import UpcomingBills from './UpcomingBills';
 import '../styles/Finance.css';
 
 function Finance() {
@@ -42,6 +43,8 @@ function Finance() {
   return (
     <div className="finance">
       <div className="finance-content">
+        <UpcomingBills refreshTrigger={refreshTrigger} />
+        
         <div className="bill-form-card">
           <div className="card-header" onClick={() => setIsFormOpen(!isFormOpen)}>
             <h3>Add New Bill</h3>

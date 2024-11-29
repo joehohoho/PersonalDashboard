@@ -71,7 +71,12 @@
   padding: 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  background: var(--input-bg);
+  background: var(--card-bg);
+  color: var(--text-primary);
+}
+
+.form-group select option {
+  background: var(--card-bg);
   color: var(--text-primary);
 }
 
@@ -89,4 +94,41 @@
 
 .submit-btn:hover {
   background: var(--primary-color-dark);
+}
+
+.upcoming-bills-card {
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: white;
+}
+
+.upcoming-bills-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.upcoming-bills-table th,
+.upcoming-bills-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #333;
+  color: white;
+}
+
+.upcoming-bills-table th {
+  background-color: #2d2d2d;
+  font-weight: 600;
+}
+
+.upcoming-bills-table tr:hover {
+  background-color: #2d2d2d;
+}
+
+.upcoming-bills-table th:nth-child(4),
+.upcoming-bills-table td:nth-child(4) {
+  text-align: center;
 } 
