@@ -527,13 +527,12 @@ function TimeEntry({ refreshTrigger }) {
   };
 
   const fetchWeekEfficiency = async () => {
-    // Get current date and start of week
+    console.log('Fetching week efficiency...');
     const today = new Date();
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
     weekStart.setHours(0, 0, 0, 0);
 
-    // Get end of week
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
     weekEnd.setHours(23, 59, 59, 999);
@@ -566,10 +565,12 @@ function TimeEntry({ refreshTrigger }) {
         .filter(entry => entry.work_date === dateString)
         .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
       
-      // Calculate efficiency percentage (avoid division by zero)
+      // For weekends, show the actual percentage if hours worked
       let efficiencyValue = 0;
       if (targetHours > 0) {
         efficiencyValue = (actualHours / targetHours) * 100;
+      } else if (actualHours > 0) {
+        efficiencyValue = (actualHours / 8) * 100; // Compare to standard workday
       }
       
       weekData.push({
@@ -580,6 +581,7 @@ function TimeEntry({ refreshTrigger }) {
       });
     }
 
+    console.log('Week efficiency data:', weekData);
     setWeekEfficiency(weekData);
   };
 
