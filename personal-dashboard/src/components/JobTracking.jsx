@@ -720,15 +720,17 @@ const ApplicationsTable = ({ onDataChange }) => {
     company: ''
   });
 
+  // Add a refresh trigger
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   useEffect(() => {
     fetchApplications();
-  }, []);
+  }, [refreshTrigger]); // Add refreshTrigger to dependency array
 
   const fetchApplications = async () => {
     console.log('Fetching applications...');
     
     try {
-      // Fetch the actual data
       const { data, error } = await supabase
         .from('job_applications')
         .select('*')
@@ -740,24 +742,15 @@ const ApplicationsTable = ({ onDataChange }) => {
         return;
       }
 
-      if (!data) {
-        console.log('No data returned from database');
-        setApplications([]);
-        return;
-      }
-
       console.log('Fetched applications:', data);
-      setApplications(data);
+      setApplications(data || []);
       
       // Update companies and positions lists
-      if (data.length > 0) {
+      if (data?.length > 0) {
         const uniqueCompanies = [...new Set(data.map(app => app.company))].sort();
         const uniquePositions = [...new Set(data.map(app => app.position))].sort();
         setCompanies(uniqueCompanies);
         setPositions(uniquePositions);
-      } else {
-        setCompanies([]);
-        setPositions([]);
       }
 
     } catch (err) {
@@ -830,10 +823,10 @@ const ApplicationsTable = ({ onDataChange }) => {
     }, 100);
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     setSelectedApplication(null);
-    fetchApplications();
-    onDataChange();
+    setRefreshTrigger(prev => prev + 1); // Trigger a refresh
+    await onDataChange();
   };
 
   const handleExport = () => {
@@ -1500,6 +1493,7 @@ function JobTracking() {
   };
 
   const refreshAllData = async () => {
+    console.log('Refreshing all data...');
     await Promise.all([
       fetchMetrics(),
       calculateStats(),
@@ -1522,8 +1516,18 @@ function JobTracking() {
         progressStats={progressStats}
       />
       <MonthlyChart data={monthlyData} />
-      <AddApplicationForm onApplicationAdded={refreshAllData} />
-      <ApplicationsTable onDataChange={refreshAllData} />
+      <AddApplicationForm 
+        onApplicationAdded={async () => {
+          console.log('Application added, refreshing data...');
+          await refreshAllData();
+        }} 
+      />
+      <ApplicationsTable 
+        onDataChange={async () => {
+          console.log('Table data changed, refreshing data...');
+          await refreshAllData();
+        }} 
+      />
     </div>
   );
 }
