@@ -530,12 +530,20 @@ function TimeEntry({ refreshTrigger }) {
     console.log('Fetching week efficiency...');
     const today = new Date();
     const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
+    // Get Monday (1) of current week
+    const day = weekStart.getDay();
+    const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
+    weekStart.setDate(diff);
     weekStart.setHours(0, 0, 0, 0);
 
     const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setDate(weekStart.getDate() + 6); // Add 6 days to get to Sunday
     weekEnd.setHours(23, 59, 59, 999);
+
+    console.log('Query date range:', {
+      start: weekStart.toISOString().split('T')[0],
+      end: weekEnd.toISOString().split('T')[0]
+    });
 
     const { data, error } = await supabase
       .from('time_entries')
@@ -548,6 +556,8 @@ function TimeEntry({ refreshTrigger }) {
       return;
     }
 
+    console.log('Raw time entries:', data);
+
     // Create an object to store daily totals
     const weekData = [];
     for (let i = 0; i < 7; i++) {
@@ -555,22 +565,20 @@ function TimeEntry({ refreshTrigger }) {
       currentDate.setDate(weekStart.getDate() + i);
       const dateString = currentDate.toISOString().split('T')[0];
       
-      // Calculate target hours (8 for Monday-Friday, 0 for weekend)
       const dayOfWeek = currentDate.getDay();
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
       const targetHours = isWeekend ? 0 : 8;
       
-      // Calculate actual hours
-      const actualHours = data
-        .filter(entry => entry.work_date === dateString)
-        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+      const entriesForDay = data.filter(entry => entry.work_date === dateString);
+      console.log(`Entries for ${dateString}:`, entriesForDay);
       
-      // For weekends, show the actual percentage if hours worked
+      const actualHours = entriesForDay.reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+      
       let efficiencyValue = 0;
       if (targetHours > 0) {
         efficiencyValue = (actualHours / targetHours) * 100;
       } else if (actualHours > 0) {
-        efficiencyValue = (actualHours / 8) * 100; // Compare to standard workday
+        efficiencyValue = (actualHours / 8) * 100;
       }
       
       weekData.push({
@@ -581,7 +589,7 @@ function TimeEntry({ refreshTrigger }) {
       });
     }
 
-    console.log('Week efficiency data:', weekData);
+    console.log('Final week efficiency data:', weekData);
     setWeekEfficiency(weekData);
   };
 
