@@ -15,22 +15,23 @@
     "appId": "com.timetracker.app",
     "productName": "Time Tracker",
     "directories": {
-      "output": "build",
-      "buildResources": "assets"
+      "output": "build"
     },
     "files": [
       "dist/**/*",
       "main.js"
     ],
     "win": {
-      "target": "nsis"
+      "target": ["portable"],
+      "icon": "assets/icon.png",
+      "signAndEditExecutable": false
     },
     "mac": {
-      "target": "dmg"
+      "target": ["dir"],
+      "icon": "assets/icon.png"
     },
-    "linux": {
-      "target": "AppImage"
-    }
+    "asar": true,
+    "forceCodeSigning": false
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

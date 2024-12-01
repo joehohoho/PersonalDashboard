@@ -3,6 +3,7 @@ import TimeEntry from './components/TimeEntry'
 import JobTracking from './components/JobTracking'
 import Finance from './components/Finance'
 import './styles/Dashboard.css'
+import { launchTimeTracker } from './utils/electronLauncher.js';
 
 function App() {
   const [isNavOpen, setIsNavOpen] = useState(true);
@@ -30,6 +31,16 @@ function App() {
             </div>
           </div>
         );
+    }
+  };
+
+  const handleTimeTrackerLaunch = (e) => {
+    e.preventDefault();
+    console.log('Time Tracker button clicked');
+    try {
+      launchTimeTracker();
+    } catch (error) {
+      console.error('Error launching Time Tracker:', error);
     }
   };
 
@@ -62,8 +73,16 @@ function App() {
             className={`nav-item ${currentPage === 'timeEntry' ? 'active' : ''}`}
             onClick={() => setCurrentPage('timeEntry')}
           >
-            <span className="nav-icon">⏱️</span>
+            <span className="nav-icon">⏱</span>
             <span className="nav-text">Time Entry</span>
+          </a>
+          <a 
+            href="#" 
+            className="nav-item"
+            onClick={handleTimeTrackerLaunch}
+          >
+            <span className="nav-icon">⏱️</span>
+            <span className="nav-text">Time Tracker</span>
           </a>
           <a 
             href="#" 
