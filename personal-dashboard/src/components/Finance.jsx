@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
 import BillsTable from './BillsTable';
 import UpcomingBills from './UpcomingBills';
@@ -18,6 +18,78 @@ function Finance() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [editingTransaction, setEditingTransaction] = useState(null);
+  const [metrics, setMetrics] = useState({
+    monthlyIncome: 0,
+    monthlyExpenses: 0,
+    monthlyBalance: 0,
+    upcomingBills: 0,
+    ytdIncome: 0,
+    ytdExpenses: 0
+  });
+
+  useEffect(() => {
+    fetchMetrics();
+  }, [refreshTrigger]);
+
+  const fetchMetrics = async () => {
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+
+    // Fetch monthly income
+    const { data: monthlyIncomeData } = await supabase
+      .from('transactions')
+      .select('amount')
+      .gte('transaction_date', firstDayOfMonth.toISOString())
+      .eq('type', 'income');
+
+    // Fetch monthly expenses
+    const { data: monthlyExpensesData } = await supabase
+      .from('transactions')
+      .select('amount')
+      .gte('transaction_date', firstDayOfMonth.toISOString())
+      .eq('type', 'expense');
+
+    // Fetch YTD income
+    const { data: ytdIncomeData } = await supabase
+      .from('transactions')
+      .select('amount')
+      .gte('transaction_date', firstDayOfYear.toISOString())
+      .eq('type', 'income');
+
+    // Fetch YTD expenses
+    const { data: ytdExpensesData } = await supabase
+      .from('transactions')
+      .select('amount')
+      .gte('transaction_date', firstDayOfYear.toISOString())
+      .eq('type', 'expense');
+
+    // Fetch upcoming bills (next 30 days)
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(today.getDate() + 30);
+    
+    const { data: upcomingBillsData } = await supabase
+      .from('bills')
+      .select('amount')
+      .gte('bill_date', today.toISOString().split('T')[0])
+      .lte('bill_date', thirtyDaysFromNow.toISOString().split('T')[0]);
+
+    // Calculate totals
+    const monthlyIncome = monthlyIncomeData?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+    const monthlyExpenses = monthlyExpensesData?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+    const ytdIncome = ytdIncomeData?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+    const ytdExpenses = ytdExpensesData?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+    const upcomingBills = upcomingBillsData?.reduce((sum, b) => sum + Number(b.amount), 0) || 0;
+
+    setMetrics({
+      monthlyIncome,
+      monthlyExpenses,
+      monthlyBalance: monthlyIncome - monthlyExpenses,
+      upcomingBills,
+      ytdIncome,
+      ytdExpenses
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -126,6 +198,32 @@ function Finance() {
         </div>
         <TransactionTypeForm refreshTrigger={refreshTrigger} setRefreshTrigger={setRefreshTrigger} />
         <PaymentMethodForm refreshTrigger={refreshTrigger} setRefreshTrigger={setRefreshTrigger} />
+        <div className="metrics-row">
+          <div className="metric-card">
+            <h3>Monthly Income</h3>
+            <p><span className="currency">$</span>{metrics.monthlyIncome.toFixed(2)}</p>
+          </div>
+          <div className="metric-card">
+            <h3>Monthly Expenses</h3>
+            <p><span className="currency">$</span>{metrics.monthlyExpenses.toFixed(2)}</p>
+          </div>
+          <div className="metric-card">
+            <h3>Monthly Balance</h3>
+            <p><span className="currency">$</span>{metrics.monthlyBalance.toFixed(2)}</p>
+          </div>
+          <div className="metric-card">
+            <h3>Upcoming Bills</h3>
+            <p><span className="currency">$</span>{metrics.upcomingBills.toFixed(2)}</p>
+          </div>
+          <div className="metric-card">
+            <h3>YTD Income</h3>
+            <p><span className="currency">$</span>{metrics.ytdIncome.toFixed(2)}</p>
+          </div>
+          <div className="metric-card">
+            <h3>YTD Expenses</h3>
+            <p><span className="currency">$</span>{metrics.ytdExpenses.toFixed(2)}</p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -5,20 +5,17 @@
   min-height: 100vh;
 }
 
-.finance h2 {
-  margin-bottom: 1rem;
-}
-
-.finance-content {
+.finance .finance-content {
   display: grid;
   grid-template-areas: 
+    "metrics metrics"
     "upcoming upcoming"
     "transaction transaction"
     "transaction-table transaction-table"
     "bills form"
     "types methods";
   grid-template-columns: 550px 400px;
-  grid-template-rows: auto auto auto auto auto;
+  grid-template-rows: auto auto auto auto auto auto;
   gap: 2rem;
   padding: 0 1.75rem;
   max-width: 1200px;
@@ -26,7 +23,46 @@
   justify-content: start;
 }
 
-.upcoming-bills-card {
+.finance .metrics-row {
+  grid-area: metrics;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.finance .metric-card {
+  background: var(--card-bg);
+  padding: 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: white;
+  text-align: center;
+}
+
+.finance .metric-card h3 {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.finance .metric-card p {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.finance .metric-card .currency {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.finance h2 {
+  margin-bottom: 1rem;
+}
+
+.finance .upcoming-bills-card {
   grid-area: upcoming;
   width: 100%;
   max-width: 550px;
@@ -39,7 +75,7 @@
   color: white;
 }
 
-.bills-table {
+.finance .bills-table {
   grid-area: bills;
   width: 100%;
   max-width: 550px;
@@ -48,7 +84,7 @@
   margin-left: 0;
 }
 
-.bill-form-card {
+.finance .bill-form-card {
   grid-area: form;
   width: 400px;
   padding: 20px;
@@ -61,7 +97,7 @@
   align-self: start;
 }
 
-.card-header {
+.finance .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -70,7 +106,7 @@
   padding: 0 0.5rem;
 }
 
-.collapse-btn {
+.finance .collapse-btn {
   background: none;
   border: none;
   color: var(--text-primary);
@@ -78,26 +114,26 @@
   font-size: 1.2rem;
 }
 
-.bill-form {
+.finance .bill-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   padding: 0 0.5rem;
 }
 
-.form-group {
+.finance .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.form-group label {
+.finance .form-group label {
   color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
-.form-group input,
-.form-group select {
+.finance .form-group input,
+.finance .form-group select {
   padding: 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: 4px;
@@ -105,12 +141,12 @@
   color: var(--text-primary);
 }
 
-.form-group select option {
+.finance .form-group select option {
   background: var(--card-bg);
   color: var(--text-primary);
 }
 
-.submit-btn {
+.finance .submit-btn {
   margin-top: 1rem;
   padding: 0.75rem 1.5rem;
   background: var(--primary-color);
@@ -122,11 +158,11 @@
   transition: background-color 0.2s;
 }
 
-.submit-btn:hover {
+.finance .submit-btn:hover {
   background: var(--primary-color-dark);
 }
 
-.upcoming-bills-table {
+.finance .upcoming-bills-table {
   width: 100%;
   max-width: 700px;
   border-collapse: collapse;
@@ -134,57 +170,57 @@
   table-layout: fixed;
 }
 
-.upcoming-bills-table th,
-.upcoming-bills-table td {
+.finance .upcoming-bills-table th,
+.finance .upcoming-bills-table td {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid #333;
   color: white;
 }
 
-.upcoming-bills-table th {
+.finance .upcoming-bills-table th {
   background-color: #2d2d2d;
   font-weight: 600;
 }
 
-.upcoming-bills-table tr:hover {
+.finance .upcoming-bills-table tr:hover {
   background-color: #2d2d2d;
 }
 
-.upcoming-bills-table th:nth-child(1),
-.upcoming-bills-table td:nth-child(1) {  /* Bill Name */
+.finance .upcoming-bills-table th:nth-child(1),
+.finance .upcoming-bills-table td:nth-child(1) {  /* Bill Name */
   width: 32%;
 }
 
-.upcoming-bills-table th:nth-child(2),
-.upcoming-bills-table td:nth-child(2) {  /* Amount */
+.finance .upcoming-bills-table th:nth-child(2),
+.finance .upcoming-bills-table td:nth-child(2) {  /* Amount */
   width: 15%;
 }
 
-.upcoming-bills-table th:nth-child(3),
-.upcoming-bills-table td:nth-child(3) {  /* Due Date */
+.finance .upcoming-bills-table th:nth-child(3),
+.finance .upcoming-bills-table td:nth-child(3) {  /* Due Date */
   width: 20%;
 }
 
-.upcoming-bills-table th:nth-child(4),
-.upcoming-bills-table td:nth-child(4) {  /* Due In */
+.finance .upcoming-bills-table th:nth-child(4),
+.finance .upcoming-bills-table td:nth-child(4) {  /* Due In */
   width: 13%;
   text-align: center;
 }
 
-.upcoming-bills-table th:nth-child(5),
-.upcoming-bills-table td:nth-child(5) {  /* Frequency */
+.finance .upcoming-bills-table th:nth-child(5),
+.finance .upcoming-bills-table td:nth-child(5) {  /* Frequency */
   width: 20%;
 }
 
-.card-header h2,  /* For Bills */
-.card-header h3 { /* For Add New Bill */
+.finance .card-header h2,  /* For Bills */
+.finance .card-header h3 { /* For Add New Bill */
   color: white;
   font-size: 1.2rem;
   font-weight: 600;
 }
 
-.transaction-form-card {
+.finance .transaction-form-card {
   grid-area: transaction;
   width: 100%;
   max-width: 550px;
@@ -197,14 +233,14 @@
   color: white;
 }
 
-.transaction-form {
+.finance .transaction-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   padding: 0 0.5rem;
 }
 
-.transaction-form textarea {
+.finance .transaction-form textarea {
   padding: 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: 4px;
@@ -214,7 +250,7 @@
   min-height: 80px;
 }
 
-.transaction-type-form-card {
+.finance .transaction-type-form-card {
   grid-area: types;
   width: 100%;
   max-width: 550px;
@@ -227,7 +263,7 @@
   color: white;
 }
 
-.payment-method-form-card {
+.finance .payment-method-form-card {
   grid-area: methods;
   width: 400px;
   padding: 20px;
@@ -238,8 +274,8 @@
   color: white;
 }
 
-.type-form,
-.method-form {
+.finance .type-form,
+.finance .method-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -247,15 +283,15 @@
   margin-bottom: 1.5rem;
 }
 
-.types-list,
-.methods-list {
+.finance .types-list,
+.finance .methods-list {
   margin-top: 1.5rem;
   border-top: 1px solid var(--border-color);
   padding-top: 1rem;
 }
 
-.type-item,
-.method-item {
+.finance .type-item,
+.finance .method-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -263,14 +299,14 @@
   border-bottom: 1px solid var(--border-color);
 }
 
-.type-item p,
-.method-item p {
+.finance .type-item p,
+.finance .method-item p {
   color: var(--text-secondary);
   font-size: 0.9rem;
   margin-top: 0.25rem;
 }
 
-.edit-btn {
+.finance .edit-btn {
   padding: 0.5rem 1rem;
   background: var(--primary-color);
   color: white;
@@ -281,11 +317,11 @@
   transition: background-color 0.2s;
 }
 
-.edit-btn:hover {
+.finance .edit-btn:hover {
   background: var(--primary-color-dark);
 }
 
-.transaction-table-card {
+.finance .transaction-table-card {
   grid-area: transaction-table;
   width: 100%;
   padding: 20px;
@@ -295,44 +331,44 @@
   color: white;
 }
 
-.table-container {
+.finance .table-container {
   overflow-x: auto;
 }
 
-.transaction-table {
+.finance .transaction-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
   table-layout: fixed;
 }
 
-.transaction-table th,
-.transaction-table td {
+.finance .transaction-table th,
+.finance .transaction-table td {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid #333;
 }
 
-.transaction-table th {
+.finance .transaction-table th {
   background-color: #2d2d2d;
   font-weight: 600;
 }
 
-.transaction-table tr:hover {
+.finance .transaction-table tr:hover {
   background-color: #2d2d2d;
 }
 
-.transaction-table td.amount {
+.finance .transaction-table td.amount {
   text-align: right;
 }
 
-.form-actions {
+.finance .form-actions {
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
 }
 
-.cancel-btn {
+.finance .cancel-btn {
   padding: 0.75rem 1.5rem;
   background: var(--error-color, #dc3545);
   color: white;
@@ -343,11 +379,11 @@
   transition: background-color 0.2s;
 }
 
-.cancel-btn:hover {
+.finance .cancel-btn:hover {
   background: var(--error-color-dark, #bd2130);
 }
 
-.transaction-table td .edit-btn {
+.finance .transaction-table td .edit-btn {
   padding: 0.25rem 0.75rem;
   font-size: 0.9rem;
-} 
+}
