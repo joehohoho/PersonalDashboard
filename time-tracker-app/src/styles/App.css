@@ -1,0 +1,129 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-color, #1a1a1a);
+  color: var(--text-primary, white);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.time-tracker {
+  height: 100vh;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.tracker-card {
+  background: var(--card-bg, #2d2d2d);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+  font-size: 1.5rem;
+  color: var(--text-primary, white);
+}
+
+.timer-display {
+  font-size: 3rem;
+  text-align: center;
+  margin: 1.5rem 0;
+  font-family: monospace;
+  font-weight: bold;
+  color: var(--text-primary, white);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary, #a0a0a0);
+  font-size: 0.9rem;
+}
+
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color, #404040);
+  border-radius: 6px;
+  background: var(--input-bg, #363636);
+  color: var(--text-primary, white);
+  font-size: 0.9rem;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.start-btn {
+  background: var(--success-color, #28a745);
+  color: white;
+}
+
+.stop-btn {
+  background: var(--error-color, #dc3545);
+  color: white;
+}
+
+.save-btn {
+  background: var(--primary-color, #0d6efd);
+  color: white;
+}
+
+.discard-btn {
+  background: var(--secondary-color, #6c757d);
+  color: white;
+}
+
+.start-btn:hover {
+  background: var(--success-color-dark, #218838);
+}
+
+.stop-btn:hover {
+  background: var(--error-color-dark, #c82333);
+}
+
+.save-btn:hover {
+  background: var(--primary-color-dark, #0b5ed7);
+}
+
+.discard-btn:hover {
+  background: var(--secondary-color-dark, #5a6268);
+}
+
+select:disabled,
+textarea:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+ 
