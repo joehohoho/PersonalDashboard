@@ -203,6 +203,23 @@ function TimeEntriesTable({ refreshTrigger }) {
     return entries.reduce((total, entry) => total + Number(entry.duration), 0);
   };
 
+  async function handleDeleteEntry(entryId) {
+    if (!window.confirm('Are you sure you want to delete this time entry?')) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('time_entries')
+      .delete()
+      .eq('id', entryId);
+
+    if (error) {
+      console.error('Error deleting entry:', error);
+    } else {
+      fetchTimeEntries();
+    }
+  }
+
   return (
     <div className="time-entries-table">
       <div className="card-header" onClick={() => setIsTableOpen(!isTableOpen)}>
@@ -350,7 +367,12 @@ function TimeEntriesTable({ refreshTrigger }) {
                 >
                   Description {filters.sortColumn === 'description' && (filters.sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th>Actions</th>
+                <th style={{ 
+                  fontSize: '12px',
+                  minWidth: '150px'  // Add minimum width for Actions column
+                }}>
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -432,8 +454,22 @@ function TimeEntriesTable({ refreshTrigger }) {
                       <td style={{ fontSize: '12px' }}>{formatTime(entry.end_time)}</td>
                       <td style={{ fontSize: '12px' }}>{Number(entry.duration).toFixed(2)}</td>
                       <td style={{ fontSize: '12px', whiteSpace: 'pre-wrap' }}>{entry.description}</td>
-                      <td style={{ fontSize: '12px' }}>
+                      <td style={{ 
+                        fontSize: '12px',
+                        minWidth: '150px',  // Match header width
+                        display: 'flex',
+                        gap: '5px'  // Add spacing between buttons
+                      }}>
                         <button onClick={() => setEditingEntry(entry)}>Edit</button>
+                        <button 
+                          onClick={() => handleDeleteEntry(entry.id)}
+                          style={{ 
+                            backgroundColor: '#ff4444',
+                            color: 'white'
+                          }}
+                        >
+                          Delete
+                        </button>
                       </td>
                     </>
                   )}
