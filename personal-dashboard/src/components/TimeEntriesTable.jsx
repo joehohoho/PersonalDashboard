@@ -454,21 +454,27 @@ function TimeEntriesTable({ refreshTrigger }) {
                       <td style={{ fontSize: '12px' }}>{formatTime(entry.end_time)}</td>
                       <td style={{ fontSize: '12px' }}>{Number(entry.duration).toFixed(2)}</td>
                       <td style={{ fontSize: '12px', whiteSpace: 'pre-wrap' }}>{entry.description}</td>
-                      <td style={{ 
-                        fontSize: '12px',
-                        minWidth: '150px',  // Match header width
-                        display: 'flex',
-                        gap: '5px'  // Add spacing between buttons
-                      }}>
-                        <button onClick={() => setEditingEntry(entry)}>Edit</button>
+                      <td className="action-buttons">
                         <button 
-                          onClick={() => handleDeleteEntry(entry.id)}
-                          style={{ 
-                            backgroundColor: '#ff4444',
-                            color: 'white'
-                          }}
+                          className="edit-btn" 
+                          onClick={() => setEditingEntry(entry)} 
+                          title="Edit"
                         >
-                          Delete
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
+                            <polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon>
+                          </svg>
+                        </button>
+                        <button 
+                          className="delete-btn" 
+                          onClick={() => handleDeleteEntry(entry.id)} 
+                          title="Delete"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                          </svg>
                         </button>
                       </td>
                     </>
