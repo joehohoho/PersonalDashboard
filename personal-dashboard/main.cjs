@@ -65,7 +65,6 @@ function createWindow() {
   if (isDev) {
     console.log('Running in development mode...');
     win.loadURL('http://localhost:5173');
-    win.webContents.openDevTools();
   } else {
     console.log('Running in production mode...');
     win.loadFile(path.join(__dirname, 'dist', 'index.html'));

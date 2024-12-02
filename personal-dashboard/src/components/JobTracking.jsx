@@ -12,6 +12,7 @@ import {
 import { Bar } from 'react-chartjs-2';
 import Papa from 'papaparse';
 import '../styles/JobTracking.css';
+const { shell } = window.require('electron');
 
 ChartJS.register(
   CategoryScale,
@@ -24,58 +25,84 @@ ChartJS.register(
 
 const SERVER_BASE_URL = 'http://localhost:8080';
 
-const MetricsRow = ({ metrics }) => {
+const MetricsRow = ({ metrics, refreshTrigger }) => {
+  const [metricsData, setMetricsData] = useState(metrics);
+
+  useEffect(() => {
+    fetchMetrics();
+  }, [refreshTrigger]);
+
+  const fetchMetrics = async () => {
+    const { data, error } = await supabase
+      .from('job_applications')
+      .select('*');
+
+    if (error) {
+      console.error('Error fetching metrics:', error);
+      return;
+    }
+
+    setMetricsData({
+      total: data.length,
+      active: data.filter(job => ['Contacted', 'Applied', 'Interview'].includes(job.status)).length,
+      rejected: data.filter(job => job.status === 'Rejected').length,
+      expired: data.filter(job => job.status === 'Expired').length,
+      interview: data.filter(job => job.has_interview).length,
+      offers: data.filter(job => job.status === 'Offer').length
+    });
+  };
+
   const calculatePercentage = (value) => {
-    if (!metrics.total || value === undefined) return '0%';
-    return `${Math.round((value / metrics.total) * 100)}%`;
+    if (!metricsData.total || value === undefined) return '0%';
+    return `${Math.round((value / metricsData.total) * 100)}%`;
   };
 
   return (
     <div className="metrics-row">
       <div className="metric-card">
         <h3>Total Applications</h3>
-        <p>{metrics.total}</p>
+        <p>{metricsData.total}</p>
       </div>
       <div className="metric-card">
         <h3>Active</h3>
         <p>
-          {metrics.active}
-          <span className="percentage"> ({calculatePercentage(metrics.active)})</span>
+          {metricsData.active}
+          <span className="percentage"> ({calculatePercentage(metricsData.active)})</span>
         </p>
       </div>
       <div className="metric-card">
         <h3>Rejected</h3>
         <p>
-          {metrics.rejected}
-          <span className="percentage"> ({calculatePercentage(metrics.rejected)})</span>
+          {metricsData.rejected}
+          <span className="percentage"> ({calculatePercentage(metricsData.rejected)})</span>
         </p>
       </div>
       <div className="metric-card">
         <h3>Expired</h3>
         <p>
-          {metrics.expired}
-          <span className="percentage"> ({calculatePercentage(metrics.expired)})</span>
+          {metricsData.expired}
+          <span className="percentage"> ({calculatePercentage(metricsData.expired)})</span>
         </p>
       </div>
       <div className="metric-card">
         <h3>Interview Stage</h3>
         <p>
-          {metrics.interview}
-          <span className="percentage"> ({calculatePercentage(metrics.interview)})</span>
+          {metricsData.interview}
+          <span className="percentage"> ({calculatePercentage(metricsData.interview)})</span>
         </p>
       </div>
       <div className="metric-card">
         <h3>Offers</h3>
         <p>
-          {metrics.offers}
-          <span className="percentage"> ({calculatePercentage(metrics.offers)})</span>
+          {metricsData.offers}
+          <span className="percentage"> ({calculatePercentage(metricsData.offers)})</span>
         </p>
       </div>
     </div>
   );
 };
 
-const StatsCards = ({ applicationStats, salaryStats, jobStats, progressStats }) => {
+const StatsCards = ({ applicationStats, salaryStats, jobStats, progressStats, refreshTrigger }) => {
   const formatPercentage = (value) => {
     const absValue = Math.abs(value); // Get absolute value
     const formattedValue = absValue.toFixed(0); // Remove decimals
@@ -191,7 +218,7 @@ const StatsCards = ({ applicationStats, salaryStats, jobStats, progressStats }) 
   );
 };
 
-const MonthlyChart = ({ data }) => {
+const MonthlyChart = ({ data, refreshTrigger }) => {
   const chartData = {
     labels: data.map(d => d.month),
     datasets: [
@@ -264,7 +291,7 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
     location: '',
     url: '',
     has_interview: false,
-    currency: 'USD',
+    currency: 'CAD',
     is_salary_listed: false,
     has_bonus: false,
     portal_url: '',
@@ -409,7 +436,7 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
       location: '',
       url: '',
       has_interview: false,
-      currency: 'USD',
+      currency: 'CAD',
       is_salary_listed: false,
       has_bonus: false,
       portal_url: '',
@@ -681,6 +708,14 @@ const openFile = (fileName) => {
   window.open(fileUrl, '_blank');
 };
 
+const openInBrowser = (url) => {
+  if (!url) return;
+  
+  // Ensure the URL has a protocol
+  const validUrl = url.startsWith('http') ? url : `https://${url}`;
+  shell.openExternal(validUrl);
+};
+
 const ApplicationsTable = ({ refreshTrigger }) => {
   const [applications, setApplications] = useState([]);
   const [filters, setFilters] = useState({
@@ -722,7 +757,7 @@ const ApplicationsTable = ({ refreshTrigger }) => {
 
   useEffect(() => {
     fetchApplications();
-  }, [refreshTrigger]); // Add refreshTrigger to dependency array
+  }, [refreshTrigger]);
 
   const fetchApplications = async () => {
     console.log('Fetching applications...');
@@ -819,9 +854,20 @@ const ApplicationsTable = ({ refreshTrigger }) => {
     }, 100);
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (application) => {
+    const { error } = await supabase
+      .from('job_applications')
+      .update(application)
+      .eq('id', application.id);
+
+    if (error) {
+      console.error('Error updating application:', error);
+      return;
+    }
+
+    // Refresh the data immediately after update
+    await fetchApplications();
     setSelectedApplication(null);
-    setRefreshTrigger(prev => prev + 1); // Trigger a refresh
   };
 
   const handleExport = () => {
@@ -1190,13 +1236,29 @@ const ApplicationsTable = ({ refreshTrigger }) => {
                   {app.url && (
                     <div>
                       <span>Listing: </span>
-                      <a href={app.url} target="_blank" rel="noopener noreferrer">Link</a>
+                      <a 
+                        href="#" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          openInBrowser(app.url);
+                        }}
+                      >
+                        Link
+                      </a>
                     </div>
                   )}
                   {app.portal_url && (
                     <div>
                       <span>Portal: </span>
-                      <a href={app.portal_url} target="_blank" rel="noopener noreferrer">Link</a>
+                      <a 
+                        href="#" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          openInBrowser(app.portal_url);
+                        }}
+                      >
+                        Link
+                      </a>
                     </div>
                   )}
                   {app.resume_path && (
@@ -1208,7 +1270,9 @@ const ApplicationsTable = ({ refreshTrigger }) => {
                           e.preventDefault();
                           openFile(app.resume_path);
                         }}
-                      >Link</a>
+                      >
+                        Link
+                      </a>
                     </div>
                   )}
                   {app.cover_letter_path && (
@@ -1220,7 +1284,9 @@ const ApplicationsTable = ({ refreshTrigger }) => {
                           e.preventDefault();
                           openFile(app.cover_letter_path);
                         }}
-                      >Link</a>
+                      >
+                        Link
+                      </a>
                     </div>
                   )}
                 </td>
@@ -1295,6 +1361,7 @@ function JobTracking() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleApplicationAdded = () => {
+    console.log('Application added, refreshing data...');
     setRefreshTrigger(prev => prev + 1);
   };
 
@@ -1361,11 +1428,18 @@ function JobTracking() {
     const totalWeeks = Math.ceil((now - oldestDate) / (7 * 24 * 60 * 60 * 1000));
     const weeklyAverage = data.length / totalWeeks;
 
+    // Modified percentage calculation
+    const weeklyDiff = prevWeekApps === 0 && lastWeekApps > 0 
+      ? 100  // If previous week was 0 and this week has applications, show 100% increase
+      : prevWeekApps === 0 && lastWeekApps === 0
+      ? 0    // If both weeks are 0, show 0% change
+      : ((lastWeekApps - prevWeekApps) / prevWeekApps * 100);
+
     setApplicationStats({
       weeklyAvg: weeklyAverage,
       lastWeek: lastWeekApps,
       previousWeek: prevWeekApps,
-      weeklyDiff: prevWeekApps ? ((lastWeekApps - prevWeekApps) / prevWeekApps * 100) : 0,
+      weeklyDiff: weeklyDiff,
       thisMonth: thisMonthApps,
       lastMonth: lastMonthApps,
       monthlyDiff: lastMonthApps ? ((thisMonthApps - lastMonthApps) / lastMonthApps * 100) : 0
@@ -1507,14 +1581,15 @@ function JobTracking() {
 
   return (
     <div className="job-tracking">
-      <MetricsRow metrics={metrics} />
+      <MetricsRow metrics={metrics} refreshTrigger={refreshTrigger} />
       <StatsCards 
         applicationStats={applicationStats}
         salaryStats={salaryStats}
         jobStats={jobStats}
         progressStats={progressStats}
+        refreshTrigger={refreshTrigger}
       />
-      <MonthlyChart data={monthlyData} />
+      <MonthlyChart data={monthlyData} refreshTrigger={refreshTrigger} />
       <AddApplicationForm onApplicationAdded={handleApplicationAdded} />
       <ApplicationsTable refreshTrigger={refreshTrigger} />
     </div>
