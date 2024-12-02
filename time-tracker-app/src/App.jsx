@@ -20,6 +20,10 @@ function App() {
   });
   const [isStopped, setIsStopped] = useState(false);
   const [endTime, setEndTime] = useState(null);
+  const [displayTimes, setDisplayTimes] = useState({
+    start: '',
+    end: ''
+  });
 
   useEffect(() => {
     console.log('Initial useEffect running');
@@ -83,6 +87,12 @@ function App() {
   };
 
   const formatElapsedTime = (seconds) => {
+    if (startTime && isTracking) {
+      const now = new Date();
+      const start = new Date(startTime);
+      seconds = Math.floor((now - start) / 1000);
+    }
+
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
@@ -96,11 +106,21 @@ function App() {
     }
 
     const now = new Date();
+    const formattedStartTime = now.toLocaleTimeString('en-US', { 
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
     setStartTime(now.toISOString());
     setIsTracking(true);
+    setDisplayTimes(prev => ({
+      ...prev,
+      start: formattedStartTime
+    }));
     setTimeEntry(prev => ({
       ...prev,
-      start_time: now.toLocaleTimeString('en-US', { hour12: false })
+      start_time: formattedStartTime
     }));
 
     const interval = setInterval(() => {
@@ -114,8 +134,33 @@ function App() {
     setTimerInterval(null);
     setIsTracking(false);
     setIsStopped(true);
+    
     const currentEndTime = new Date();
+    const formattedEndTime = currentEndTime.toLocaleTimeString('en-US', { 
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
     setEndTime(currentEndTime);
+    setDisplayTimes(prev => ({
+      ...prev,
+      end: formattedEndTime
+    }));
+  };
+
+  const handleTimeChange = (type, value) => {
+    setDisplayTimes(prev => ({
+      ...prev,
+      [type]: value
+    }));
+
+    if (type === 'start') {
+      setTimeEntry(prev => ({
+        ...prev,
+        start_time: value
+      }));
+    }
   };
 
   const saveTimeEntry = async () => {
@@ -126,8 +171,8 @@ function App() {
       .insert([{
         task_id: timeEntry.task_id,
         description: timeEntry.description,
-        start_time: timeEntry.start_time,
-        end_time: endTime.toLocaleTimeString('en-US', { hour12: false }),
+        start_time: displayTimes.start,
+        end_time: displayTimes.end,
         duration: Number(duration.toFixed(2)),
         work_date: timeEntry.work_date
       }]);
@@ -146,6 +191,7 @@ function App() {
       setElapsedTime(0);
       setIsStopped(false);
       setEndTime(null);
+      setDisplayTimes({ start: '', end: '' });
     }
   };
 
@@ -211,6 +257,28 @@ function App() {
               onChange={(e) => setTimeEntry({ ...timeEntry, description: e.target.value })}
               disabled={isTracking}
             />
+          </div>
+
+          <div className="form-group time-inputs">
+            <div>
+              <label>Start Time</label>
+              <input
+                type="time"
+                value={displayTimes.start}
+                onChange={(e) => handleTimeChange('start', e.target.value)}
+                disabled={isTracking}
+              />
+            </div>
+            {isStopped && (
+              <div>
+                <label>End Time</label>
+                <input
+                  type="time"
+                  value={displayTimes.end}
+                  onChange={(e) => handleTimeChange('end', e.target.value)}
+                />
+              </div>
+            )}
           </div>
 
           <div className="timer-controls">

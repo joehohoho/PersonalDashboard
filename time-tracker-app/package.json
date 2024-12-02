@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A desktop time tracking application",
   "author": "Your Name",
-  "main": "main.js",
+  "main": "./main.cjs",
   "scripts": {
     "start": "electron .",
     "dev": "vite",
@@ -22,12 +22,16 @@
       "main.js"
     ],
     "win": {
-      "target": ["portable"],
+      "target": [
+        "portable"
+      ],
       "icon": "assets/icon.png",
       "signAndEditExecutable": false
     },
     "mac": {
-      "target": ["dir"],
+      "target": [
+        "dir"
+      ],
       "icon": "assets/icon.png"
     },
     "asar": true,
@@ -43,6 +47,7 @@
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",
     "concurrently": "latest",
+    "cross-env": "^7.0.3",
     "electron": "latest",
     "electron-builder": "latest",
     "vite": "latest",
