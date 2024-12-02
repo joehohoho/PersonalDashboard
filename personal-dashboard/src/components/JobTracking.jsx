@@ -397,7 +397,7 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
         return;
       }
 
-      await onApplicationAdded();
+      onApplicationAdded && onApplicationAdded();
     }
 
     setFormData({
@@ -681,7 +681,7 @@ const openFile = (fileName) => {
   window.open(fileUrl, '_blank');
 };
 
-const ApplicationsTable = ({ onDataChange }) => {
+const ApplicationsTable = ({ refreshTrigger }) => {
   const [applications, setApplications] = useState([]);
   const [filters, setFilters] = useState({
     company: '',
@@ -719,9 +719,6 @@ const ApplicationsTable = ({ onDataChange }) => {
     position: '',
     company: ''
   });
-
-  // Add a refresh trigger
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     fetchApplications();
@@ -805,7 +802,6 @@ const ApplicationsTable = ({ onDataChange }) => {
       }
 
       await fetchApplications();
-      await onDataChange();
     }
   };
 
@@ -826,7 +822,6 @@ const ApplicationsTable = ({ onDataChange }) => {
   const handleUpdate = async () => {
     setSelectedApplication(null);
     setRefreshTrigger(prev => prev + 1); // Trigger a refresh
-    await onDataChange();
   };
 
   const handleExport = () => {
@@ -923,7 +918,6 @@ const ApplicationsTable = ({ onDataChange }) => {
           
           // Refresh the data
           await fetchApplications();
-          await onDataChange();
           
           alert('Import completed successfully!');
         } catch (err) {
@@ -974,7 +968,6 @@ const ApplicationsTable = ({ onDataChange }) => {
 
       // Refresh all data
       await fetchApplications();
-      await onDataChange();
     }
   };
 
@@ -1299,6 +1292,12 @@ function JobTracking() {
   });
   const [monthlyData, setMonthlyData] = useState([]);
 
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleApplicationAdded = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
   const fetchMetrics = async () => {
     const { data, error } = await supabase
       .from('job_applications')
@@ -1516,18 +1515,8 @@ function JobTracking() {
         progressStats={progressStats}
       />
       <MonthlyChart data={monthlyData} />
-      <AddApplicationForm 
-        onApplicationAdded={async () => {
-          console.log('Application added, refreshing data...');
-          await refreshAllData();
-        }} 
-      />
-      <ApplicationsTable 
-        onDataChange={async () => {
-          console.log('Table data changed, refreshing data...');
-          await refreshAllData();
-        }} 
-      />
+      <AddApplicationForm onApplicationAdded={handleApplicationAdded} />
+      <ApplicationsTable refreshTrigger={refreshTrigger} />
     </div>
   );
 }
