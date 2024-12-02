@@ -78,14 +78,6 @@ function App() {
           </a>
           <a 
             href="#" 
-            className="nav-item"
-            onClick={handleTimeTrackerLaunch}
-          >
-            <span className="nav-icon">⏱️</span>
-            <span className="nav-text">Time Tracker</span>
-          </a>
-          <a 
-            href="#" 
             className={`nav-item ${currentPage === 'jobTracking' ? 'active' : ''}`}
             onClick={() => setCurrentPage('jobTracking')}
           >
@@ -94,15 +86,15 @@ function App() {
           </a>
         </div>
 
-        <div className="nav-section-title">SETTINGS</div>
+        <div className="nav-section-title">APPS</div>
         <div className="nav-links">
-          <a href="#" className="nav-item">
-            <span className="nav-icon">⚙️</span>
-            <span className="nav-text">Settings</span>
-          </a>
-          <a href="#" className="nav-item">
-            <span className="nav-icon">👤</span>
-            <span className="nav-text">Profile</span>
+          <a 
+            href="#" 
+            className="nav-item"
+            onClick={handleTimeTrackerLaunch}
+          >
+            <span className="nav-icon">⏱️</span>
+            <span className="nav-text">Time Tracker</span>
           </a>
         </div>
       </nav>
