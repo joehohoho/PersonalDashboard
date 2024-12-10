@@ -755,9 +755,30 @@ const ApplicationsTable = ({ refreshTrigger }) => {
     company: ''
   });
 
+  const statusDropdownRef = useRef(null);
+
   useEffect(() => {
     fetchApplications();
   }, [refreshTrigger]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      console.log('Click detected');
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target)) {
+        console.log('Click was outside dropdown');
+        setIsStatusDropdownOpen(false);
+      }
+    };
+
+    // Use mousedown and touchstart to catch all types of clicks
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [statusDropdownRef]);
 
   const fetchApplications = async () => {
     console.log('Fetching applications...');
@@ -1134,18 +1155,35 @@ const ApplicationsTable = ({ refreshTrigger }) => {
             ))}
           </select>
 
-          <div className="status-filter-container">
+          <div 
+            className="status-filter-container" 
+            ref={statusDropdownRef}
+          >
             <button 
               className="status-filter-button"
-              onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsStatusDropdownOpen(!isStatusDropdownOpen);
+              }}
+              style={{ 
+                fontWeight: 'normal',
+                fontSize: '0.9rem'
+              }}
             >
               Status Filter ({filters.status.length || 'All'})
             </button>
             {isStatusDropdownOpen && (
-              <div className="status-dropdown">
+              <div 
+                className="status-dropdown"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="status-options">
                   {statusOptions.map(status => (
-                    <label key={status} className="status-option">
+                    <label 
+                      key={status} 
+                      className="status-option"
+                      style={{ fontSize: '0.9rem' }}
+                    >
                       <input
                         type="checkbox"
                         checked={filters.status.includes(status)}
