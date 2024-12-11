@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../config/supabase';
+import { listFiles, getFileContent } from '../utils/googleDriveClient';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,7 +13,6 @@ import {
 import { Bar } from 'react-chartjs-2';
 import Papa from 'papaparse';
 import '../styles/JobTracking.css';
-const { shell } = window.require('electron');
 
 ChartJS.register(
   CategoryScale,
@@ -708,12 +708,8 @@ const openFile = (fileName) => {
   window.open(fileUrl, '_blank');
 };
 
-const openInBrowser = (url) => {
-  if (!url) return;
-  
-  // Ensure the URL has a protocol
-  const validUrl = url.startsWith('http') ? url : `https://${url}`;
-  shell.openExternal(validUrl);
+const openExternalLink = (url) => {
+  window.open(url, '_blank');
 };
 
 const ApplicationsTable = ({ refreshTrigger }) => {
@@ -1278,7 +1274,7 @@ const ApplicationsTable = ({ refreshTrigger }) => {
                         href="#" 
                         onClick={(e) => {
                           e.preventDefault();
-                          openInBrowser(app.url);
+                          openExternalLink(app.url);
                         }}
                       >
                         Link
@@ -1292,7 +1288,7 @@ const ApplicationsTable = ({ refreshTrigger }) => {
                         href="#" 
                         onClick={(e) => {
                           e.preventDefault();
-                          openInBrowser(app.portal_url);
+                          openExternalLink(app.portal_url);
                         }}
                       >
                         Link
@@ -1398,7 +1394,7 @@ function JobTracking() {
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const handleApplicationAdded = () => {
+  const handleApplicationAdded = async () => {
     console.log('Application added, refreshing data...');
     setRefreshTrigger(prev => prev + 1);
   };
