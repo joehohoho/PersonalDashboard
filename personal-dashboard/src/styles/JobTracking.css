@@ -907,3 +907,9 @@ td button:last-child:hover {
   background: none !important;
 }
  
+.metric-card small {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.5rem;
+}

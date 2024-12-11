@@ -25,6 +25,14 @@ ChartJS.register(
 
 const SERVER_BASE_URL = 'http://localhost:8080';
 
+const calculateDaysUnemployed = () => {
+  const startDate = new Date('2024-05-01');
+  const today = new Date();
+  const diffTime = Math.abs(today - startDate);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+};
+
 const MetricsRow = ({ metrics, refreshTrigger }) => {
   const [metricsData, setMetricsData] = useState(metrics);
 
@@ -59,6 +67,11 @@ const MetricsRow = ({ metrics, refreshTrigger }) => {
 
   return (
     <div className="metrics-row">
+      <div className="metric-card">
+        <h3>Days Unemployed</h3>
+        <p>{calculateDaysUnemployed()}</p>
+        <small>Since May 1st, 2024</small>
+      </div>
       <div className="metric-card">
         <h3>Total Applications</h3>
         <p>{metricsData.total}</p>
