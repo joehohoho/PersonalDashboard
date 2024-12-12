@@ -353,35 +353,48 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
     }));
   };
 
-  const handleFileSelect = async (type) => {
+  const handleFileUpload = async (file, type) => {
     try {
-      const handle = await window.showOpenFilePicker({
-        types: [
-          {
-            description: 'Documents',
-            accept: {
-              'application/pdf': ['.pdf'],
-              'application/msword': ['.doc', '.docx']
-            }
-          }
-        ]
-      });
-      
-      const fileHandle = handle[0];
-      const file = await fileHandle.getFile();
-      
-      const fileName = file.name;
-      console.log('Selected file:', fileName);
-      
+      let filePath;
+
+      // If editing an existing application, use the existing file path
+      if (editData && editData[`${type}_path`]) {
+        filePath = editData[`${type}_path`];
+      } else {
+        // Create a new file path for new applications
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${type}_${Date.now()}.${fileExt}`;
+        filePath = `${type}s/${fileName}`; // results in "resumes/..." or "cover_letters/..."
+      }
+
+      // Check if file exists and remove it if updating
+      if (editData && editData[`${type}_path`]) {
+        const { error: removeError } = await supabase.storage
+          .from('job_documents')
+          .remove([editData[`${type}_path`]]);
+
+        if (removeError) {
+          console.error(`Error removing old ${type}:`, removeError);
+        }
+      }
+
+      // Upload new file
+      const { data, error: uploadError } = await supabase.storage
+        .from('job_documents')
+        .upload(filePath, file, { upsert: true }); // Use upsert to overwrite existing files
+
+      if (uploadError) throw uploadError;
+
+      // Update the form data with the file path
       setFormData(prev => ({
         ...prev,
-        [`${type}_path`]: fileName
+        [`${type}_path`]: filePath
       }));
 
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        console.error('Error selecting file:', err);
-      }
+      return filePath;
+    } catch (error) {
+      console.error(`Error uploading ${type}:`, error);
+      throw error;
     }
   };
 
@@ -628,23 +641,19 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
               <label>Resume</label>
               <div className="file-input-group">
                 <input
-                  type="text"
-                  value={formData.resume_path}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    resume_path: e.target.value
-                  }))}
-                  placeholder="Enter or select file path"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={async (e) => {
+                    if (e.target.files?.[0]) {
+                      try {
+                        await handleFileUpload(e.target.files[0], 'resume');
+                      } catch (error) {
+                        console.error('Error handling resume upload:', error);
+                      }
+                    }
+                  }}
                 />
-                <button 
-                  type="button"
-                  onClick={() => handleFileSelect('resume')}
-                  title="Select File"
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
-                    <path d="M2 13.5V2.5A1.5 1.5 0 0 1 3.5 1h2.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 3H12.5A1.5 1.5 0 0 1 14 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5z"/>
-                  </svg>
-                </button>
+                {formData.resume_path && <span>File selected: {formData.resume_path}</span>}
               </div>
             </div>
 
@@ -652,23 +661,19 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
               <label>Cover Letter</label>
               <div className="file-input-group">
                 <input
-                  type="text"
-                  value={formData.cover_letter_path}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    cover_letter_path: e.target.value
-                  }))}
-                  placeholder="Enter or select file path"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={async (e) => {
+                    if (e.target.files?.[0]) {
+                      try {
+                        await handleFileUpload(e.target.files[0], 'cover_letter');
+                      } catch (error) {
+                        console.error('Error handling cover letter upload:', error);
+                      }
+                    }
+                  }}
                 />
-                <button 
-                  type="button"
-                  onClick={() => handleFileSelect('cover_letter')}
-                  title="Select File"
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
-                    <path d="M2 13.5V2.5A1.5 1.5 0 0 1 3.5 1h2.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 3H12.5A1.5 1.5 0 0 1 14 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5z"/>
-                  </svg>
-                </button>
+                {formData.cover_letter_path && <span>File selected: {formData.cover_letter_path}</span>}
               </div>
             </div>
           </div>
@@ -723,6 +728,55 @@ const openFile = (fileName) => {
 
 const openExternalLink = (url) => {
   window.open(url, '_blank');
+};
+
+const handleFileView = async (filePath) => {
+  try {
+    const { data, error } = await supabase.storage
+      .from('job_documents')
+      .download(filePath);
+
+    if (error) throw error;
+
+    // Determine file type from extension
+    const fileExtension = filePath.split('.').pop().toLowerCase();
+    let mimeType;
+    
+    switch (fileExtension) {
+      case 'pdf':
+        mimeType = 'application/pdf';
+        break;
+      case 'doc':
+        mimeType = 'application/msword';
+        break;
+      case 'docx':
+        mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        break;
+      default:
+        mimeType = 'application/octet-stream';
+    }
+
+    // Create blob with correct mime type
+    const blob = new Blob([data], { type: mimeType });
+    
+    // For Word documents, trigger a download instead of trying to open in browser
+    if (fileExtension === 'doc' || fileExtension === 'docx') {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filePath.split('/').pop(); // Get the filename from the path
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } else {
+      // For PDFs, open in new tab
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    }
+  } catch (error) {
+    console.error('Error viewing/downloading file:', error);
+  }
 };
 
 const ApplicationsTable = ({ refreshTrigger }) => {
@@ -1310,29 +1364,29 @@ const ApplicationsTable = ({ refreshTrigger }) => {
                   )}
                   {app.resume_path && (
                     <div>
-                      <span>Resume: </span>
                       <a 
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          openFile(app.resume_path);
+                          handleFileView(app.resume_path);
                         }}
+                        className="file-link"
                       >
-                        Link
+                        Resume
                       </a>
                     </div>
                   )}
                   {app.cover_letter_path && (
                     <div>
-                      <span>Cover Letter: </span>
                       <a 
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          openFile(app.cover_letter_path);
+                          handleFileView(app.cover_letter_path);
                         }}
+                        className="file-link"
                       >
-                        Link
+                        Cover Letter
                       </a>
                     </div>
                   )}

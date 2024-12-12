@@ -913,3 +913,13 @@ td button:last-child:hover {
   color: #666;
   margin-top: 0.5rem;
 }
+
+.file-link {
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.file-link:hover {
+  text-decoration: underline;
+}
