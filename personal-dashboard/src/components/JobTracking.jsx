@@ -398,6 +398,28 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
     }
   };
 
+  const handleRemoveFile = async (type) => {
+    try {
+      const filePath = formData[`${type}_path`];
+      if (!filePath) return;
+
+      // Remove file from storage
+      const { error: removeError } = await supabase.storage
+        .from('job_documents')
+        .remove([filePath]);
+
+      if (removeError) throw removeError;
+
+      // Update form data to remove the file path
+      setFormData(prev => ({
+        ...prev,
+        [`${type}_path`]: ''
+      }));
+    } catch (error) {
+      console.error(`Error removing ${type}:`, error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -653,7 +675,18 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
                     }
                   }}
                 />
-                {formData.resume_path && <span>File selected: {formData.resume_path}</span>}
+                {formData.resume_path && (
+                  <div className="file-info">
+                    <span>{formData.resume_path.split('/').pop()}</span>
+                    <button 
+                      type="button" 
+                      onClick={() => handleRemoveFile('resume')}
+                      className="remove-btn"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -673,7 +706,18 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
                     }
                   }}
                 />
-                {formData.cover_letter_path && <span>File selected: {formData.cover_letter_path}</span>}
+                {formData.cover_letter_path && (
+                  <div className="file-info">
+                    <span>{formData.cover_letter_path.split('/').pop()}</span>
+                    <button 
+                      type="button" 
+                      onClick={() => handleRemoveFile('cover_letter')}
+                      className="remove-btn"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
