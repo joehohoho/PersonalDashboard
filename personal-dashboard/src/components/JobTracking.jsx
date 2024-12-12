@@ -1272,25 +1272,14 @@ const ApplicationsTable = ({ refreshTrigger }) => {
                 e.stopPropagation();
                 setIsStatusDropdownOpen(!isStatusDropdownOpen);
               }}
-              style={{ 
-                fontWeight: 'normal',
-                fontSize: '0.9rem'
-              }}
             >
               Status Filter ({filters.status.length || 'All'})
             </button>
             {isStatusDropdownOpen && (
-              <div 
-                className="status-dropdown"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="status-dropdown">
                 <div className="status-options">
                   {statusOptions.map(status => (
-                    <label 
-                      key={status} 
-                      className="status-option"
-                      style={{ fontSize: '0.9rem' }}
-                    >
+                    <label key={status} className="status-option">
                       <input
                         type="checkbox"
                         checked={filters.status.includes(status)}
@@ -1303,29 +1292,37 @@ const ApplicationsTable = ({ refreshTrigger }) => {
               </div>
             )}
           </div>
+
+          <button 
+            className="clear-filters-btn"
+            onClick={() => setFilters({
+              company: '',
+              position: '',
+              status: []
+            })}
+          >
+            Clear Filters
+          </button>
         </div>
 
         <div className="import-export">
-          <input
-            type="file"
-            accept=".csv"
-            onChange={handleImport}
-            disabled={isImporting}
-            style={{ display: 'none' }}
-            id="import-input"
-          />
-          <button 
-            onClick={() => document.getElementById('import-input').click()}
-            disabled={isImporting}
+          <button
+            className="import-btn"
+            onClick={handleImport}
           >
-            {isImporting ? 'Importing...' : 'Import CSV'}
+            Import
           </button>
-          <button onClick={handleExport}>Export CSV</button>
-          <button 
-            onClick={handleDeleteAll}
-            className="delete-all-btn"
+          <button
+            className="export-btn"
+            onClick={handleExport}
           >
-            Delete All Entries
+            Export
+          </button>
+          <button
+            className="delete-all-btn"
+            onClick={handleDeleteAll}
+          >
+            Delete All
           </button>
         </div>
       </div>
