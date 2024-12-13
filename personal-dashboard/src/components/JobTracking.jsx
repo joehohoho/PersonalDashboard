@@ -1499,12 +1499,12 @@ function JobTracking() {
     activeRate: 0
   });
   const [monthlyData, setMonthlyData] = useState([]);
-
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleApplicationAdded = async () => {
     console.log('Application added, refreshing data...');
     setRefreshTrigger(prev => prev + 1);
+    await calculateMonthlyData(); // Directly refresh monthly data
   };
 
   const fetchMetrics = async () => {
@@ -1719,7 +1719,7 @@ function JobTracking() {
   // Initial data load
   useEffect(() => {
     refreshAllData();
-  }, []);
+  }, [refreshTrigger]);
 
   return (
     <div className="job-tracking">
