@@ -36,6 +36,8 @@ body {
   z-index: 1000;
   flex-shrink: 0;
   border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar.collapsed {
@@ -785,4 +787,29 @@ td button:hover {
 
 .time-entries-table td[title] {
   cursor: help;
+}
+
+.nav-links:last-child {
+  margin-top: auto;
+  padding-bottom: 1rem;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.nav-section-title:last-of-type {
+  margin-top: auto;
+}
+
+.nav-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.account-section {
+  margin-top: auto;
+  padding-bottom: 1rem;
 }

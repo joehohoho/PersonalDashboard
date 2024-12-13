@@ -71,6 +71,16 @@ function App() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      // Session state will be automatically updated by the onAuthStateChange listener
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
   return (
     <Router>
       <Routes>
@@ -129,16 +139,32 @@ function App() {
                     </a>
                   </div>
 
-                  <div className="nav-section-title">APPS</div>
-                  <div className="nav-links">
-                    <a 
-                      href="#" 
-                      className="nav-item"
-                      onClick={handleTimeTrackerLaunch}
-                    >
-                      <span className="nav-icon">⏱️</span>
-                      <span className="nav-text">Time Tracker</span>
-                    </a>
+                  <div className="nav-section">
+                    <div className="nav-section-title">APPS</div>
+                    <div className="nav-links">
+                      <a 
+                        href="#" 
+                        className="nav-item"
+                        onClick={handleTimeTrackerLaunch}
+                      >
+                        <span className="nav-icon">⏱️</span>
+                        <span className="nav-text">Time Tracker</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="nav-section account-section">
+                    <div className="nav-section-title">ACCOUNT</div>
+                    <div className="nav-links">
+                      <a 
+                        href="#" 
+                        className="nav-item"
+                        onClick={handleLogout}
+                      >
+                        <span className="nav-icon">🚪</span>
+                        <span className="nav-text">Logout</span>
+                      </a>
+                    </div>
                   </div>
                 </nav>
 
