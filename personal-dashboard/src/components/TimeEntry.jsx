@@ -63,9 +63,18 @@ function TimeEntry({ refreshTrigger }) {
 
   const fetchTimeMetrics = async () => {
     const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
     const weekStart = new Date();
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    const lastWeekStart = new Date(weekStart);
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+    
     const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const lastMonthStart = new Date(monthStart);
+    lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
     const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
 
     const { data, error } = await supabase
@@ -78,32 +87,77 @@ function TimeEntry({ refreshTrigger }) {
     }
 
     if (data) {
+      // Calculate daily comparison
+      const todayHours = data
+        .filter(entry => entry.work_date === today)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+      
+      const yesterdayHours = data
+        .filter(entry => entry.work_date === yesterdayStr)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+      
+      const dailyDiff = yesterdayHours ? ((todayHours - yesterdayHours) / yesterdayHours * 100) : 0;
+
+      // Calculate weekly comparison
+      const thisWeekHours = data
+        .filter(entry => new Date(entry.work_date) >= weekStart)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+      
+      const lastWeekHours = data
+        .filter(entry => 
+          new Date(entry.work_date) >= lastWeekStart && 
+          new Date(entry.work_date) < weekStart
+        )
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+      
+      const weeklyDiff = lastWeekHours ? ((thisWeekHours - lastWeekHours) / lastWeekHours * 100) : 0;
+
+      // Calculate monthly comparison
+      const thisMonthHours = data
+        .filter(entry => new Date(entry.work_date) >= monthStart)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+      
+      const lastMonthHours = data
+        .filter(entry => 
+          new Date(entry.work_date) >= lastMonthStart && 
+          new Date(entry.work_date) < monthStart
+        )
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+      
+      const monthlyDiff = lastMonthHours ? ((thisMonthHours - lastMonthHours) / lastMonthHours * 100) : 0;
+
       // Calculate average daily hours
       const uniqueDays = new Set(data.map(entry => entry.work_date)).size;
       const totalHours = data.reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
-      const avgDailyHours = uniqueDays > 0 ? totalHours / uniqueDays : 0;
+      const avgDaily = uniqueDays > 0 ? totalHours / uniqueDays : 0;
 
       // Calculate average weekly hours
-      const firstEntry = new Date(Math.min(...data.map(entry => new Date(entry.work_date))));
-      const lastEntry = new Date(Math.max(...data.map(entry => new Date(entry.work_date))));
-      const totalWeeks = Math.ceil((lastEntry - firstEntry) / (7 * 24 * 60 * 60 * 1000));
-      const avgWeeklyHours = totalWeeks > 0 ? totalHours / totalWeeks : 0;
+      const oldestEntry = new Date(Math.min(...data.map(entry => new Date(entry.work_date))));
+      const totalWeeks = Math.max(1, Math.ceil((new Date() - oldestEntry) / (7 * 24 * 60 * 60 * 1000)));
+      const avgWeekly = totalHours / totalWeeks;
 
+      // Calculate average monthly hours
+      const monthDiff = (new Date() - oldestEntry) / (1000 * 60 * 60 * 24 * 30.44); // Using average month length
+      const totalMonths = Math.max(1, Math.ceil(monthDiff));
+      const avgMonthly = totalHours / totalMonths;
+
+      // Calculate other metrics as before
       const totals = {
-        today: data
-          .filter(entry => entry.work_date === today)
-          .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
-        week: data
-          .filter(entry => new Date(entry.work_date) >= weekStart)
-          .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
-        month: data
-          .filter(entry => new Date(entry.work_date) >= monthStart)
-          .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
+        today: todayHours,
+        todayDiff: dailyDiff,
+        yesterdayHours,
+        week: thisWeekHours,
+        weekDiff: weeklyDiff,
+        lastWeekHours,
+        month: thisMonthHours,
+        monthDiff: monthlyDiff,
+        lastMonthHours,
         year: data
           .filter(entry => entry.work_date >= yearStart)
           .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
-        avgDaily: avgDailyHours,
-        avgWeekly: avgWeeklyHours
+        avgDaily: avgDaily,
+        avgWeekly: avgWeekly,
+        avgMonthly: avgMonthly
       };
 
       setMetrics(totals);
@@ -899,15 +953,39 @@ function TimeEntry({ refreshTrigger }) {
       <div className="metrics-row">
         <div className="metric-card">
           <h3>Today ({getCurrentDayAbbr()})</h3>
-          <p>{(metrics.today || 0).toFixed(2)}</p>
+          <p>
+            {(metrics.today || 0).toFixed(2)}
+            {metrics.todayDiff !== undefined && metrics.todayDiff !== 0 && (
+              <span className={`diff ${metrics.todayDiff > 0 ? 'positive' : 'negative'}`}>
+                {metrics.todayDiff > 0 ? '↑' : '↓'}{Math.abs(metrics.todayDiff || 0).toFixed(1)}%
+              </span>
+            )}
+          </p>
+          <small>vs Yesterday: {(metrics.yesterdayHours || 0).toFixed(2)}</small>
         </div>
         <div className="metric-card">
           <h3>This Week ({getWeekProgress()} of 7)</h3>
-          <p>{(metrics.week || 0).toFixed(2)}</p>
+          <p>
+            {(metrics.week || 0).toFixed(2)}
+            {metrics.weekDiff !== undefined && metrics.weekDiff !== 0 && (
+              <span className={`diff ${metrics.weekDiff > 0 ? 'positive' : 'negative'}`}>
+                {metrics.weekDiff > 0 ? '↑' : '↓'}{Math.abs(metrics.weekDiff || 0).toFixed(1)}%
+              </span>
+            )}
+          </p>
+          <small>vs Last Week: {(metrics.lastWeekHours || 0).toFixed(2)}</small>
         </div>
         <div className="metric-card">
           <h3>This Month ({getCurrentMonthAbbr()})</h3>
-          <p>{(metrics.month || 0).toFixed(2)}</p>
+          <p>
+            {(metrics.month || 0).toFixed(2)}
+            {metrics.monthDiff !== undefined && metrics.monthDiff !== 0 && (
+              <span className={`diff ${metrics.monthDiff > 0 ? 'positive' : 'negative'}`}>
+                {metrics.monthDiff > 0 ? '↑' : '↓'}{Math.abs(metrics.monthDiff || 0).toFixed(1)}%
+              </span>
+            )}
+          </p>
+          <small>vs Last Month: {(metrics.lastMonthHours || 0).toFixed(2)}</small>
         </div>
         <div className="metric-card">
           <h3>This Year ({getCurrentYear()})</h3>
@@ -920,6 +998,10 @@ function TimeEntry({ refreshTrigger }) {
         <div className="metric-card">
           <h3>Avg Weekly Hours</h3>
           <p>{(metrics.avgWeekly || 0).toFixed(2)}</p>
+        </div>
+        <div className="metric-card">
+          <h3>Avg Monthly Hours</h3>
+          <p>{(metrics.avgMonthly || 0).toFixed(2)}</p>
         </div>
       </div>
 

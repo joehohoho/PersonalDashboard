@@ -94,4 +94,28 @@
 
 div[style*="display: grid"] {
   padding: 0 1.25rem !important;
+}
+
+.metric-card .diff {
+  font-size: 0.8em;
+  margin-left: 8px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.metric-card .diff.positive {
+  color: #4caf50;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.metric-card .diff.negative {
+  color: #f44336;
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.metric-card small {
+  display: block;
+  font-size: 0.75em;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
 } 
