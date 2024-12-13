@@ -982,17 +982,7 @@ const ApplicationsTable = ({ refreshTrigger }) => {
     }, 100);
   };
 
-  const handleUpdate = async (application) => {
-    const { error } = await supabase
-      .from('job_applications')
-      .update(application)
-      .eq('id', application.id);
-
-    if (error) {
-      console.error('Error updating application:', error);
-      return;
-    }
-
+  const handleUpdate = async () => {
     // Refresh the data immediately after update
     await fetchApplications();
     setSelectedApplication(null);
