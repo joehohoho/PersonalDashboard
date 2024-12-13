@@ -1,0 +1,62 @@
+From 6d71213b9bb360304be4b598ae300fb15bead4b4 Mon Sep 17 00:00:00 2001
+From: joeho <joe5ho@gmail.com>
+Date: Wed, 11 Dec 2024 14:57:41 -0400
+Subject: [PATCH] JT - Added new summary card for number of days unemployed.
+
+---
+ personal-dashboard/src/components/JobTracking.jsx | 13 +++++++++++++
+ personal-dashboard/src/styles/JobTracking.css     |  8 +++++++-
+ 2 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/personal-dashboard/src/components/JobTracking.jsx b/personal-dashboard/src/components/JobTracking.jsx
+index 24abcef..d66b089 100644
+--- a/personal-dashboard/src/components/JobTracking.jsx
++++ b/personal-dashboard/src/components/JobTracking.jsx
+@@ -25,6 +25,14 @@ ChartJS.register(
+ 
+ const SERVER_BASE_URL = 'http://localhost:8080';
+ 
++const calculateDaysUnemployed = () => {
++  const startDate = new Date('2024-05-01');
++  const today = new Date();
++  const diffTime = Math.abs(today - startDate);
++  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
++  return diffDays;
++};
++
+ const MetricsRow = ({ metrics, refreshTrigger }) => {
+   const [metricsData, setMetricsData] = useState(metrics);
+ 
+@@ -59,6 +67,11 @@ const MetricsRow = ({ metrics, refreshTrigger }) => {
+ 
+   return (
+     <div className="metrics-row">
++      <div className="metric-card">
++        <h3>Days Unemployed</h3>
++        <p>{calculateDaysUnemployed()}</p>
++        <small>Since May 1st, 2024</small>
++      </div>
+       <div className="metric-card">
+         <h3>Total Applications</h3>
+         <p>{metricsData.total}</p>
+diff --git a/personal-dashboard/src/styles/JobTracking.css b/personal-dashboard/src/styles/JobTracking.css
+index 03b8a8a..964f7e6 100644
+--- a/personal-dashboard/src/styles/JobTracking.css
++++ b/personal-dashboard/src/styles/JobTracking.css
+@@ -906,4 +906,10 @@ td button:last-child:hover {
+ .file-input-group button:last-child:hover {
+   background: none !important;
+ }
+- 
+\ No newline at end of file
++ 
++.metric-card small {
++  display: block;
++  font-size: 0.8rem;
++  color: #666;
++  margin-top: 0.5rem;
++}
+\ No newline at end of file
+-- 
+2.43.0.windows.1
+

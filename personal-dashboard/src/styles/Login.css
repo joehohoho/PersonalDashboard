@@ -1,0 +1,113 @@
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #1a1a1a;
+  margin: 0;
+  padding: 0;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #1e1e1e;
+  padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.login-box {
+  background-color: #2d2d2d;
+  padding: 3rem;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.login-box h1 {
+  color: #fff;
+  margin-bottom: 1rem;
+  font-size: 2rem;
+}
+
+.login-box p {
+  color: #ccc;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.google-login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background-color: #fff;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 100%;
+  transition: background-color 0.2s;
+}
+
+.google-login-btn:hover {
+  background-color: #f5f5f5;
+}
+
+.google-login-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* Supabase Auth UI overrides */
+:global(.supabase-auth-ui_ui-container) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+:global(.supabase-auth-ui_ui-button) {
+  width: 100% !important;
+  margin: 0.5rem 0 !important;
+}
+
+:global(.supabase-auth-ui_ui-input) {
+  width: 100% !important;
+}
+
+:global(.supabase-auth-ui_ui-divider) {
+  margin: 1.5rem 0 !important;
+  text-align: center !important;
+}
+
+:global(.supabase-auth-ui_ui-message) {
+  text-align: center !important;
+  width: 100% !important;
+}
+
+:global(.supabase-auth-ui_ui-anchor) {
+  display: block !important;
+  text-align: center !important;
+  margin: 0.5rem 0 !important;
+} 
