@@ -949,7 +949,7 @@ function TimeEntry({ refreshTrigger }) {
 
   return (
     <div className="dashboard">
-      {/* Add metrics cards at the top */}
+      {/* First Row - Current Period Stats */}
       <div className="metrics-row">
         <div className="metric-card">
           <h3>Today ({getCurrentDayAbbr()})</h3>
@@ -988,9 +988,13 @@ function TimeEntry({ refreshTrigger }) {
           <small>vs Last Month: {(metrics.lastMonthHours || 0).toFixed(2)}</small>
         </div>
         <div className="metric-card">
-          <h3>This Year ({getCurrentYear()})</h3>
+          <h3>This Year</h3>
           <p>{(metrics.year || 0).toFixed(2)}</p>
         </div>
+      </div>
+
+      {/* Second Row - Average Stats */}
+      <div className="metrics-row">
         <div className="metric-card">
           <h3>Avg Daily Hours</h3>
           <p>{(metrics.avgDaily || 0).toFixed(2)}</p>

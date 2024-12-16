@@ -28,7 +28,6 @@
 
 .metrics-row {
   display: grid;
-  grid-template-columns: repeat(6, minmax(140px, 1fr));
   gap: 0.85rem;
   margin-bottom: 1rem;
   padding: 0;
@@ -39,8 +38,19 @@
   position: relative;
 }
 
+.metrics-row:nth-child(2) {
+  margin-top: -0.5rem;
+}
+
+.metrics-row:first-child,
+.metrics-row:nth-child(2) {
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+}
+
 .metric-card {
   width: 100%;
+  min-width: 140px;
   background: var(--card-bg);
   border-radius: var(--border-radius);
   padding: 0.85rem;
@@ -95,7 +105,6 @@
 div[style*="display: grid"] {
   padding: 0 1.25rem !important;
 }
-
 .metric-card .diff {
   font-size: 0.8em;
   margin-left: 8px;
@@ -118,4 +127,8 @@ div[style*="display: grid"] {
   font-size: 0.75em;
   color: rgba(255, 255, 255, 0.7);
   margin-top: 4px;
-} 
+}
+
+.metrics-row:first-child .metric-card:last-child {
+  grid-column: 3;
+}
