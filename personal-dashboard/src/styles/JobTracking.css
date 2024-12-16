@@ -605,12 +605,13 @@ td button:last-child:hover {
 }
 
 .links-column a {
-  color: #4caf50;
+  color: #007bff;
   text-decoration: none;
 }
 
 .links-column a:hover {
   text-decoration: underline;
+  color: #0056b3;
 }
 
 /* Update the table cell padding */
@@ -933,6 +934,7 @@ td button:last-child:hover {
 
 .file-link:hover {
   text-decoration: underline;
+  color: #0056b3;
 }
 
 .file-info {
@@ -986,4 +988,54 @@ td button:last-child:hover {
 
 .clear-filters-btn:hover {
   background-color: #4f4f4f;
+}
+
+.application-form .file-input-group {
+  position: relative;
+  min-height: 32px; /* Height of the input */
+  max-height: 64px; /* Maximum height when file is selected */
+  overflow: hidden;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  background: var(--bg-dark);
+  border-radius: 4px;
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-info span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.remove-btn:hover {
+  color: var(--text-primary);
+}
+
+.form-group {
+  min-height: 80px; /* Set a fixed minimum height */
+  margin-bottom: 1rem;
+}
+
+.file-input-group input[type="file"] {
+  max-width: 100%;
 }

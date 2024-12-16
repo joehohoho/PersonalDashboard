@@ -722,8 +722,10 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
                 )}
               </div>
             </div>
+          </div>
 
-            <div className="form-group">
+          <div className="form-row">
+            <div className="form-group" style={{ width: '100%', maxWidth: 'calc(200% + 0.85rem)' }}>
               <label>Job Description</label>
               <div className="file-input-group">
                 <input
