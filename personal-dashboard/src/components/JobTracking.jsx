@@ -310,7 +310,8 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
     portal_url: '',
     cover_letter_path: '',
     resume_path: '',
-    description: ''
+    description: '',
+    job_description_path: '',
   });
 
   const [isFormVisible, setIsFormVisible] = useState(!!editData);
@@ -490,7 +491,8 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
       portal_url: '',
       cover_letter_path: '',
       resume_path: '',
-      description: ''
+      description: '',
+      job_description_path: '',
     });
     
     setIsFormVisible(false);
@@ -712,6 +714,37 @@ const AddApplicationForm = ({ onApplicationAdded, editData = null, onUpdate = nu
                     <button 
                       type="button" 
                       onClick={() => handleRemoveFile('cover_letter')}
+                      className="remove-btn"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Job Description</label>
+              <div className="file-input-group">
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={async (e) => {
+                    if (e.target.files?.[0]) {
+                      try {
+                        await handleFileUpload(e.target.files[0], 'job_description');
+                      } catch (error) {
+                        console.error('Error handling job description upload:', error);
+                      }
+                    }
+                  }}
+                />
+                {formData.job_description_path && (
+                  <div className="file-info">
+                    <span>{formData.job_description_path.split('/').pop()}</span>
+                    <button 
+                      type="button" 
+                      onClick={() => handleRemoveFile('job_description')}
                       className="remove-btn"
                     >
                       ×
@@ -1047,7 +1080,8 @@ const ApplicationsTable = ({ refreshTrigger }) => {
             url: row.URL || '',
             portal_url: row['Portal URL'] || '',
             resume_path: row['Resume Path'] || '',
-            cover_letter_path: row['Cover Letter Path'] || ''
+            cover_letter_path: row['Cover Letter Path'] || '',
+            job_description_path: row['Job Description Path'] || '',
           }));
 
         console.log('Formatted data:', formattedData);
@@ -1367,7 +1401,6 @@ const ApplicationsTable = ({ refreshTrigger }) => {
                 <td className="links-column">
                   {app.url && (
                     <div>
-                      <span>Listing: </span>
                       <a 
                         href="#" 
                         onClick={(e) => {
@@ -1375,13 +1408,26 @@ const ApplicationsTable = ({ refreshTrigger }) => {
                           openExternalLink(app.url);
                         }}
                       >
-                        Link
+                        Job Posting
+                      </a>
+                    </div>
+                  )}
+                  {app.job_description_path && (
+                    <div>
+                      <a 
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleFileView(app.job_description_path);
+                        }}
+                        className="file-link"
+                      >
+                        Job Desc
                       </a>
                     </div>
                   )}
                   {app.portal_url && (
                     <div>
-                      <span>Portal: </span>
                       <a 
                         href="#" 
                         onClick={(e) => {
@@ -1389,7 +1435,7 @@ const ApplicationsTable = ({ refreshTrigger }) => {
                           openExternalLink(app.portal_url);
                         }}
                       >
-                        Link
+                        Job Portal
                       </a>
                     </div>
                   )}
