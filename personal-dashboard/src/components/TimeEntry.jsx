@@ -61,123 +61,170 @@ function TimeEntry({ refreshTrigger }) {
   const [dayDistribution, setDayDistribution] = useState([]);
   const [weekEfficiency, setWeekEfficiency] = useState([]);
 
-  const fetchTimeMetrics = async () => {
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-    
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-    const lastWeekStart = new Date(weekStart);
-    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-    
-    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    const lastMonthStart = new Date(monthStart);
-    lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
-    const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
-
-    const { data, error } = await supabase
-      .from('time_entries')
-      .select('duration, work_date');
-
-    if (error) {
-      console.error('Error fetching time metrics:', error);
-      return;
-    }
-
-    if (data) {
-      // Calculate daily comparison
-      const todayHours = data
-        .filter(entry => entry.work_date === today)
-        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+  const fetchMetrics = async () => {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       
-      const yesterdayHours = data
+      // Calculate all date ranges
+      // Today and Yesterday
+      const todayStr = today.toISOString().split('T')[0];
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      // Week ranges
+      const weekStart = new Date(today);
+      const day = weekStart.getDay();
+      const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
+      weekStart.setDate(diff);
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
+      const weekStartStr = weekStart.toISOString().split('T')[0];
+      const weekEndStr = weekEnd.toISOString().split('T')[0];
+
+      // Last week ranges
+      const lastWeekStart = new Date(weekStart);
+      lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+      const lastWeekEnd = new Date(weekEnd);
+      lastWeekEnd.setDate(lastWeekEnd.getDate() - 7);
+      const lastWeekStartStr = lastWeekStart.toISOString().split('T')[0];
+      const lastWeekEndStr = lastWeekEnd.toISOString().split('T')[0];
+
+      // Month ranges
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      monthEnd.setHours(23, 59, 59, 999);
+      const monthStartStr = monthStart.toISOString().split('T')[0];
+      const monthEndStr = monthEnd.toISOString().split('T')[0];
+
+      // Last month ranges
+      const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+      lastMonthEnd.setHours(23, 59, 59, 999);
+      const lastMonthStartStr = lastMonthStart.toISOString().split('T')[0];
+      const lastMonthEndStr = lastMonthEnd.toISOString().split('T')[0];
+
+      // Year ranges
+      const yearStart = new Date(today.getFullYear(), 0, 1);
+      const yearEnd = new Date(today.getFullYear(), 11, 31);
+      yearEnd.setHours(23, 59, 59, 999);
+      const yearStartStr = yearStart.toISOString().split('T')[0];
+      const yearEndStr = yearEnd.toISOString().split('T')[0];
+
+      // Fetch all time entries for the current year (includes all periods we need)
+      const { data: timeEntries, error: entriesError } = await supabase
+        .from('time_entries')
+        .select('work_date, duration')
+        .gte('work_date', yearStartStr)
+        .lte('work_date', yearEndStr);
+
+      if (entriesError) throw entriesError;
+
+      // Calculate metrics from the fetched data
+      const todayHours = timeEntries
+        .filter(entry => entry.work_date === todayStr)
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+
+      const yesterdayHours = timeEntries
         .filter(entry => entry.work_date === yesterdayStr)
         .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
-      
-      const dailyDiff = yesterdayHours ? ((todayHours - yesterdayHours) / yesterdayHours * 100) : 0;
 
-      // Calculate weekly comparison
-      const thisWeekHours = data
-        .filter(entry => new Date(entry.work_date) >= weekStart)
+      const weekHours = timeEntries
+        .filter(entry => entry.work_date >= weekStartStr && entry.work_date <= weekEndStr)
         .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
-      
-      const lastWeekHours = data
-        .filter(entry => 
-          new Date(entry.work_date) >= lastWeekStart && 
-          new Date(entry.work_date) < weekStart
-        )
+
+      const lastWeekHours = timeEntries
+        .filter(entry => entry.work_date >= lastWeekStartStr && entry.work_date <= lastWeekEndStr)
         .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
-      
-      const weeklyDiff = lastWeekHours ? ((thisWeekHours - lastWeekHours) / lastWeekHours * 100) : 0;
 
-      // Calculate monthly comparison
-      const thisMonthHours = data
-        .filter(entry => new Date(entry.work_date) >= monthStart)
+      const monthHours = timeEntries
+        .filter(entry => entry.work_date >= monthStartStr && entry.work_date <= monthEndStr)
         .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
-      
-      const lastMonthHours = data
-        .filter(entry => 
-          new Date(entry.work_date) >= lastMonthStart && 
-          new Date(entry.work_date) < monthStart
-        )
+
+      const lastMonthHours = timeEntries
+        .filter(entry => entry.work_date >= lastMonthStartStr && entry.work_date <= lastMonthEndStr)
         .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
-      
-      const monthlyDiff = lastMonthHours ? ((thisMonthHours - lastMonthHours) / lastMonthHours * 100) : 0;
 
-      // Calculate average daily hours
-      const uniqueDays = new Set(data.map(entry => entry.work_date)).size;
-      const totalHours = data.reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
-      const avgDaily = uniqueDays > 0 ? totalHours / uniqueDays : 0;
+      const yearHours = timeEntries
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
 
-      // Calculate average weekly hours
-      const oldestEntry = new Date(Math.min(...data.map(entry => new Date(entry.work_date))));
-      const totalWeeks = Math.max(1, Math.ceil((new Date() - oldestEntry) / (7 * 24 * 60 * 60 * 1000)));
-      const avgWeekly = totalHours / totalWeeks;
+      // Calculate percentage differences
+      const todayDiff = yesterdayHours ? ((todayHours - yesterdayHours) / yesterdayHours) * 100 : 0;
+      const weekDiff = lastWeekHours ? ((weekHours - lastWeekHours) / lastWeekHours) * 100 : 0;
+      const monthDiff = lastMonthHours ? ((monthHours - lastMonthHours) / lastMonthHours) * 100 : 0;
 
-      // Calculate average monthly hours
-      const monthDiff = (new Date() - oldestEntry) / (1000 * 60 * 60 * 24 * 30.44); // Using average month length
-      const totalMonths = Math.max(1, Math.ceil(monthDiff));
-      const avgMonthly = totalHours / totalMonths;
+      // Calculate averages
+      const workDaysInMonth = timeEntries
+        .filter(entry => entry.work_date >= monthStartStr && entry.work_date <= monthEndStr)
+        .reduce((days, entry) => {
+          if (!days.includes(entry.work_date)) {
+            days.push(entry.work_date);
+          }
+          return days;
+        }, []).length;
 
-      // Calculate other metrics as before
-      const totals = {
+      const workDaysInYear = timeEntries
+        .reduce((days, entry) => {
+          if (!days.includes(entry.work_date)) {
+            days.push(entry.work_date);
+          }
+          return days;
+        }, []).length;
+
+      // Calculate number of weeks with entries
+      const weeksWithEntries = new Set(
+        timeEntries.map(entry => {
+          const entryDate = new Date(entry.work_date);
+          const weekStart = new Date(entryDate);
+          weekStart.setDate(entryDate.getDate() - entryDate.getDay() + (entryDate.getDay() === 0 ? -6 : 1));
+          return weekStart.toISOString().split('T')[0];
+        })
+      ).size;
+
+      // Calculate averages
+      const avgDaily = workDaysInYear > 0 ? yearHours / workDaysInYear : 0;
+      const avgWeekly = weeksWithEntries > 0 ? yearHours / weeksWithEntries : 0;
+      const avgMonthly = (today.getMonth() + 1) > 0 ? yearHours / (today.getMonth() + 1) : 0;
+
+      // Update metrics state with all values
+      setMetrics(prevMetrics => ({
+        ...prevMetrics,
         today: todayHours,
-        todayDiff: dailyDiff,
+        todayDiff,
         yesterdayHours,
-        week: thisWeekHours,
-        weekDiff: weeklyDiff,
+        week: weekHours,
+        weekDiff,
         lastWeekHours,
-        month: thisMonthHours,
-        monthDiff: monthlyDiff,
+        month: monthHours,
+        monthDiff,
         lastMonthHours,
-        year: data
-          .filter(entry => entry.work_date >= yearStart)
-          .reduce((sum, entry) => sum + Number(entry.duration || 0), 0),
-        avgDaily: avgDaily,
-        avgWeekly: avgWeekly,
-        avgMonthly: avgMonthly
-      };
+        year: yearHours,
+        avgDaily: Number(avgDaily.toFixed(2)),
+        avgWeekly: Number(avgWeekly.toFixed(2)),
+        avgMonthly: Number(avgMonthly.toFixed(2))
+      }));
 
-      setMetrics(totals);
+    } catch (error) {
+      console.error('Error fetching metrics:', error);
     }
   };
 
   useEffect(() => {
-    const fetchAllData = async () => {
-      await Promise.all([
-        fetchTimeMetrics(),
-        fetchProjectHours(),
-        fetchTaskHours(),
-        fetchTimeDistribution(),
-        fetchDayDistribution(),
-        fetchWeekEfficiency()
-      ]);
-    };
+    fetchMetrics();
+  }, []);
 
-    fetchAllData();
-  }, [timeEntryUpdates, refreshTrigger]);
+  useEffect(() => {
+    if (metrics.year) {
+      console.log('Year metrics:', {
+        total: metrics.year,
+        diff: metrics.yearDiff,
+        lastYear: metrics.lastYearHours
+      });
+    }
+  }, [metrics.year]);
 
   useEffect(() => {
     fetchProjects();
@@ -259,37 +306,109 @@ function TimeEntry({ refreshTrigger }) {
     }
   }
 
-  async function handleTimeEntry(e) {
+  // Update the existing handleTimeEntry function
+  const handleTimeEntry = async (e) => {
     e.preventDefault();
-    
-    const entryData = {
-      task_id: timeEntry.task_id,
-      duration: timeEntry.duration,
-      description: timeEntry.description,
-      start_time: timeEntry.start_time || null,
-      end_time: timeEntry.end_time || null,
-      work_date: timeEntry.work_date
-    };
+    try {
+      const { data, error } = await supabase
+        .from('time_entries')
+        .insert([timeEntry]);
 
-    const { data, error } = await supabase
-      .from('time_entries')
-      .insert([entryData])
-      .select();
+      if (error) throw error;
 
-    if (error) {
-      console.error('Error creating time entry:', error);
-    } else {
+      // Clear the form
       setTimeEntry({
+        work_date: new Date().toISOString().split('T')[0],
+        project_id: '',
         task_id: '',
-        duration: '',
-        description: '',
         start_time: '',
         end_time: '',
-        work_date: new Date().toISOString().split('T')[0]
+        duration: '',
+        description: ''
       });
+
+      // Trigger updates
       setTimeEntryUpdates(prev => prev + 1);
+      
+      // Immediately fetch all new data
+      await Promise.all([
+        fetchMetrics(),
+        fetchProjectHours(),
+        fetchTaskHours(),
+        fetchTimeDistribution(),
+        fetchDayDistribution(),
+        fetchWeekEfficiency()
+      ]);
+      
+      toast.success('Time entry added successfully');
+
+    } catch (error) {
+      console.error('Error adding time entry:', error);
+      toast.error('Error adding time entry');
     }
-  }
+  };
+
+  // Update the useEffect hooks to include all data fetching
+  useEffect(() => {
+    // Initial fetch of all data
+    const fetchAllData = async () => {
+      await Promise.all([
+        fetchMetrics(),
+        fetchProjectHours(),
+        fetchTaskHours(),
+        fetchTimeDistribution(),
+        fetchDayDistribution(),
+        fetchWeekEfficiency()
+      ]);
+    };
+
+    fetchAllData();
+
+    // Set up automatic refresh
+    const interval = setInterval(() => {
+      fetchAllData();
+    }, 60000); // Refresh every minute
+
+    return () => clearInterval(interval);
+  }, []); // Run once on mount
+
+  // Add separate effect for time entry updates
+  useEffect(() => {
+    if (timeEntryUpdates > 0) {
+      // Refresh all data when a new entry is added
+      Promise.all([
+        fetchMetrics(),
+        fetchProjectHours(),
+        fetchTaskHours(),
+        fetchTimeDistribution(),
+        fetchDayDistribution(),
+        fetchWeekEfficiency()
+      ]);
+    }
+  }, [timeEntryUpdates]); // Run when timeEntryUpdates changes
+
+  // Debug logging for averages
+  useEffect(() => {
+    if (metrics.avgDaily || metrics.avgWeekly || metrics.avgMonthly) {
+      console.log('Average metrics updated:', {
+        daily: metrics.avgDaily,
+        weekly: metrics.avgWeekly,
+        monthly: metrics.avgMonthly,
+        updateTrigger: timeEntryUpdates
+      });
+    }
+  }, [metrics.avgDaily, metrics.avgWeekly, metrics.avgMonthly, timeEntryUpdates]);
+
+  // Add debug logging for chart data
+  useEffect(() => {
+    console.log('Chart data updated:', {
+      projects: projectHours.length,
+      tasks: taskHours.length,
+      timeDistribution: timeDistribution.length,
+      dayDistribution: dayDistribution.length,
+      weekEfficiency: weekEfficiency.length
+    });
+  }, [projectHours, taskHours, timeDistribution, dayDistribution, weekEfficiency]);
 
   const calculateDuration = (start, end) => {
     if (!start || !end) return;
