@@ -29,12 +29,13 @@ function TimeEntry({ refreshTrigger }) {
   const [tasks, setTasks] = useState([]);
   const [selectedProject, setSelectedProject] = useState('');
   const [timeEntry, setTimeEntry] = useState({
+    work_date: new Date().toLocaleDateString('en-CA'),
+    project_id: '',
     task_id: '',
-    duration: '',
-    description: '',
     start_time: '',
     end_time: '',
-    work_date: new Date().toISOString().split('T')[0]
+    duration: '',
+    description: ''
   });
   const [newProject, setNewProject] = useState({
     name: '',
@@ -309,14 +310,24 @@ function TimeEntry({ refreshTrigger }) {
   // Update the existing handleTimeEntry function
   const handleTimeEntry = async (e) => {
     e.preventDefault();
-    try {
-      const { data, error } = await supabase
-        .from('time_entries')
-        .insert([timeEntry]);
+    
+    const entryData = {
+      task_id: timeEntry.task_id,
+      duration: timeEntry.duration,
+      description: timeEntry.description,
+      start_time: timeEntry.start_time || null,
+      end_time: timeEntry.end_time || null,
+      work_date: timeEntry.work_date
+    };
 
-      if (error) throw error;
+    const { data, error } = await supabase
+      .from('time_entries')
+      .insert([entryData])
+      .select();
 
-      // Clear the form
+    if (error) {
+      console.error('Error creating time entry:', error);
+    } else {
       setTimeEntry({
         work_date: new Date().toISOString().split('T')[0],
         project_id: '',
@@ -326,25 +337,7 @@ function TimeEntry({ refreshTrigger }) {
         duration: '',
         description: ''
       });
-
-      // Trigger updates
       setTimeEntryUpdates(prev => prev + 1);
-      
-      // Immediately fetch all new data
-      await Promise.all([
-        fetchMetrics(),
-        fetchProjectHours(),
-        fetchTaskHours(),
-        fetchTimeDistribution(),
-        fetchDayDistribution(),
-        fetchWeekEfficiency()
-      ]);
-      
-      toast.success('Time entry added successfully');
-
-    } catch (error) {
-      console.error('Error adding time entry:', error);
-      toast.error('Error adding time entry');
     }
   };
 
@@ -703,19 +696,19 @@ function TimeEntry({ refreshTrigger }) {
     console.log('Fetching week efficiency...');
     const today = new Date();
     const weekStart = new Date(today);
-    // Get Monday (1) of current week
+    // Adjust to get Monday of current week
     const day = weekStart.getDay();
     const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
     weekStart.setDate(diff);
     weekStart.setHours(0, 0, 0, 0);
 
     const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6); // Add 6 days to get to Sunday
+    weekEnd.setDate(weekStart.getDate() + 6);
     weekEnd.setHours(23, 59, 59, 999);
 
-    console.log('Query date range:', {
-      start: weekStart.toISOString().split('T')[0],
-      end: weekEnd.toISOString().split('T')[0]
+    console.log('Week range:', {
+      start: weekStart.toISOString(),
+      end: weekEnd.toISOString()
     });
 
     const { data, error } = await supabase
@@ -729,9 +722,7 @@ function TimeEntry({ refreshTrigger }) {
       return;
     }
 
-    console.log('Raw time entries:', data);
-
-    // Create an object to store daily totals
+    // Create an array for each day of the week
     const weekData = [];
     for (let i = 0; i < 7; i++) {
       const currentDate = new Date(weekStart);
@@ -743,26 +734,25 @@ function TimeEntry({ refreshTrigger }) {
       const targetHours = isWeekend ? 0 : 8;
       
       const entriesForDay = data.filter(entry => entry.work_date === dateString);
-      console.log(`Entries for ${dateString}:`, entriesForDay);
-      
       const actualHours = entriesForDay.reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
       
       let efficiencyValue = 0;
       if (targetHours > 0) {
         efficiencyValue = (actualHours / targetHours) * 100;
       } else if (actualHours > 0) {
-        efficiencyValue = (actualHours / 8) * 100;
+        efficiencyValue = 100; // Show 100% if work done on weekend
       }
       
       weekData.push({
         day: currentDate.toLocaleString('en-US', { weekday: 'short' }),
+        date: dateString, // Add date for debugging
         efficiency: Number(efficiencyValue.toFixed(1)),
         actual: Number(actualHours.toFixed(2)),
         target: targetHours
       });
     }
 
-    console.log('Final week efficiency data:', weekData);
+    console.log('Week efficiency data:', weekData);
     setWeekEfficiency(weekData);
   };
 
