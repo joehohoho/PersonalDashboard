@@ -1511,7 +1511,7 @@ const ApplicationsTable = ({ refreshTrigger }) => {
 
 const ActivePortalsTable = ({ refreshTrigger, onEdit }) => {
   const [activePortals, setActivePortals] = useState([]);
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [sortConfig, setSortConfig] = useState({
     key: 'company',
     direction: 'asc'
