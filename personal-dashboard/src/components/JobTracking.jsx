@@ -1509,6 +1509,105 @@ const ApplicationsTable = ({ refreshTrigger }) => {
   );
 };
 
+const ActivePortalsTable = ({ refreshTrigger }) => {
+  const [activePortals, setActivePortals] = useState([]);
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [sortConfig, setSortConfig] = useState({
+    key: 'company',
+    direction: 'asc'
+  });
+
+  useEffect(() => {
+    fetchActivePortals();
+  }, [refreshTrigger]);
+
+  const fetchActivePortals = async () => {
+    const { data, error } = await supabase
+      .from('job_applications')
+      .select('company, position, portal_url')
+      .not('status', 'in', '("Withdrawn","Rejected","Expired")')
+      .not('portal_url', 'eq', '')
+      .not('portal_url', 'is', null)
+      .order('company');
+
+    if (error) {
+      console.error('Error fetching active portals:', error);
+      return;
+    }
+
+    setActivePortals(data || []);
+  };
+
+  const handleSort = (key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const sortedPortals = [...activePortals].sort((a, b) => {
+    if (a[sortConfig.key] < b[sortConfig.key]) {
+      return sortConfig.direction === 'asc' ? -1 : 1;
+    }
+    if (a[sortConfig.key] > b[sortConfig.key]) {
+      return sortConfig.direction === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+
+  const openPortal = (url) => {
+    window.open(url, '_blank');
+  };
+
+  return (
+    <div className="active-portals-section">
+      <button 
+        className="toggle-section-btn"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <h3>
+          Active Application Portals ({activePortals.length})
+          <span className="toggle-icon">{isExpanded ? '▼' : '▶'}</span>
+        </h3>
+      </button>
+      
+      {isExpanded && (
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th onClick={() => handleSort('company')}>
+                  Company {sortConfig.key === 'company' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th onClick={() => handleSort('position')}>
+                  Position {sortConfig.key === 'position' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th>Portal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedPortals.map((portal, index) => (
+                <tr key={index}>
+                  <td>{portal.company}</td>
+                  <td>{portal.position}</td>
+                  <td>
+                    <button 
+                      className="portal-link"
+                      onClick={() => openPortal(portal.portal_url)}
+                    >
+                      Open Portal
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
+
 function JobTracking() {
   const [metrics, setMetrics] = useState([]);
   const [applicationStats, setApplicationStats] = useState({
@@ -1770,6 +1869,7 @@ function JobTracking() {
         refreshTrigger={refreshTrigger}
       />
       <MonthlyChart data={monthlyData} refreshTrigger={refreshTrigger} />
+      <ActivePortalsTable refreshTrigger={refreshTrigger} />
       <AddApplicationForm onApplicationAdded={handleApplicationAdded} />
       <ApplicationsTable refreshTrigger={refreshTrigger} />
     </div>
