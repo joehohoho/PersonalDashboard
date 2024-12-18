@@ -1509,7 +1509,7 @@ const ApplicationsTable = ({ refreshTrigger }) => {
   );
 };
 
-const ActivePortalsTable = ({ refreshTrigger }) => {
+const ActivePortalsTable = ({ refreshTrigger, onEdit }) => {
   const [activePortals, setActivePortals] = useState([]);
   const [isExpanded, setIsExpanded] = useState(true);
   const [sortConfig, setSortConfig] = useState({
@@ -1524,7 +1524,7 @@ const ActivePortalsTable = ({ refreshTrigger }) => {
   const fetchActivePortals = async () => {
     const { data, error } = await supabase
       .from('job_applications')
-      .select('company, position, portal_url')
+      .select('*')  // Changed to select all fields for edit functionality
       .not('status', 'in', '("Withdrawn","Rejected","Expired")')
       .not('portal_url', 'eq', '')
       .not('portal_url', 'is', null)
@@ -1583,11 +1583,12 @@ const ActivePortalsTable = ({ refreshTrigger }) => {
                   Position {sortConfig.key === 'position' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
                 <th>Portal</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {sortedPortals.map((portal, index) => (
-                <tr key={index}>
+              {sortedPortals.map((portal) => (
+                <tr key={portal.id}>
                   <td>{portal.company}</td>
                   <td>{portal.position}</td>
                   <td>
@@ -1596,6 +1597,18 @@ const ActivePortalsTable = ({ refreshTrigger }) => {
                       onClick={() => openPortal(portal.portal_url)}
                     >
                       Open Portal
+                    </button>
+                  </td>
+                  <td className="action-buttons">
+                    <button 
+                      className="edit-btn" 
+                      onClick={() => onEdit(portal)} 
+                      title="Edit"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
+                        <polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon>
+                      </svg>
                     </button>
                   </td>
                 </tr>
@@ -1637,6 +1650,7 @@ function JobTracking() {
   });
   const [monthlyData, setMonthlyData] = useState([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [selectedApplication, setSelectedApplication] = useState(null);
 
   const handleApplicationAdded = async () => {
     console.log('Application added, refreshing data...');
@@ -1858,6 +1872,17 @@ function JobTracking() {
     refreshAllData();
   }, [refreshTrigger]);
 
+  const handleEdit = (application) => {
+    setSelectedApplication(application);
+    // Scroll to the edit form
+    setTimeout(() => {
+      const editForm = document.querySelector('.edit-application-form');
+      if (editForm) {
+        editForm.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
   return (
     <div className="job-tracking">
       <MetricsRow metrics={metrics} refreshTrigger={refreshTrigger} />
@@ -1869,7 +1894,19 @@ function JobTracking() {
         refreshTrigger={refreshTrigger}
       />
       <MonthlyChart data={monthlyData} refreshTrigger={refreshTrigger} />
-      <ActivePortalsTable refreshTrigger={refreshTrigger} />
+      <ActivePortalsTable 
+        refreshTrigger={refreshTrigger} 
+        onEdit={handleEdit}
+      />
+      {selectedApplication && (
+        <AddApplicationForm 
+          editData={selectedApplication}
+          onUpdate={() => {
+            setSelectedApplication(null);
+            setRefreshTrigger(prev => prev + 1);
+          }}
+        />
+      )}
       <AddApplicationForm onApplicationAdded={handleApplicationAdded} />
       <ApplicationsTable refreshTrigger={refreshTrigger} />
     </div>

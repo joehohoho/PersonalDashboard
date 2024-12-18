@@ -1151,3 +1151,27 @@ td button:last-child:hover {
     transform: translateY(0);
   }
 }
+
+.active-portals-section .action-buttons {
+  white-space: nowrap;
+}
+
+.active-portals-section .action-buttons button {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  color: #888;
+}
+
+.active-portals-section .action-buttons button:hover {
+  opacity: 0.8;
+  background: none !important;
+  color: #fff;
+}
+
+.active-portals-section th:last-child {
+  width: 60px;
+  text-align: center;
+}
