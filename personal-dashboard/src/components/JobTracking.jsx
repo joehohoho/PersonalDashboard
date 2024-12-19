@@ -858,7 +858,7 @@ const handleFileView = async (filePath) => {
   }
 };
 
-const ApplicationsTable = ({ refreshTrigger }) => {
+const ApplicationsTable = ({ refreshTrigger, onUpdate }) => {
   const [applications, setApplications] = useState([]);
   const [filters, setFilters] = useState({
     company: '',
@@ -1655,7 +1655,13 @@ function JobTracking() {
   const handleApplicationAdded = async () => {
     console.log('Application added, refreshing data...');
     setRefreshTrigger(prev => prev + 1);
-    await calculateMonthlyData(); // Directly refresh monthly data
+    await calculateMonthlyData();
+  };
+
+  const handleUpdate = async () => {
+    // Refresh all data immediately after update
+    setRefreshTrigger(prev => prev + 1);
+    setSelectedApplication(null);
   };
 
   const fetchMetrics = async () => {
@@ -1901,14 +1907,14 @@ function JobTracking() {
       {selectedApplication && (
         <AddApplicationForm 
           editData={selectedApplication}
-          onUpdate={() => {
-            setSelectedApplication(null);
-            setRefreshTrigger(prev => prev + 1);
-          }}
+          onUpdate={handleUpdate}
         />
       )}
       <AddApplicationForm onApplicationAdded={handleApplicationAdded} />
-      <ApplicationsTable refreshTrigger={refreshTrigger} />
+      <ApplicationsTable 
+        refreshTrigger={refreshTrigger}
+        onUpdate={handleUpdate}
+      />
     </div>
   );
 }
