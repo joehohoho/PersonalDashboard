@@ -1056,6 +1056,11 @@ function TimeEntry({ refreshTrigger }) {
     }
   };
 
+  const handleEntryUpdate = async () => {
+    console.log('Entry updated, refreshing metrics...');
+    await fetchMetrics();
+  };
+
   return (
     <div className="dashboard">
       {/* First Row - Current Period Stats */}
@@ -1265,7 +1270,10 @@ function TimeEntry({ refreshTrigger }) {
       </div>
 
       {/* Time Entries Table */}
-      <TimeEntriesTable refreshTrigger={timeEntryUpdates} />
+      <TimeEntriesTable 
+        refreshTrigger={timeEntryUpdates} 
+        onEntryUpdate={handleEntryUpdate}
+      />
 
       {/* Creation Cards */}
       <div className="management-grid">

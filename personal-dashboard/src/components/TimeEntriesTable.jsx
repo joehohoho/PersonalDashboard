@@ -23,7 +23,7 @@ const calculateDuration = (startTime, endTime) => {
   return Number((hours + minutes / 60).toFixed(2));
 };
 
-function TimeEntriesTable({ refreshTrigger }) {
+function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
   const [entries, setEntries] = useState([]);
   const [filters, setFilters] = useState({
     project: '',
@@ -96,15 +96,15 @@ function TimeEntriesTable({ refreshTrigger }) {
     }
   }
 
-  async function handleUpdateEntry(entry) {
+  const handleUpdate = async (entry) => {
     const { error } = await supabase
       .from('time_entries')
       .update({
+        work_date: entry.work_date,
         duration: entry.duration,
         description: entry.description,
         start_time: entry.start_time,
-        end_time: entry.end_time,
-        work_date: entry.work_date
+        end_time: entry.end_time
       })
       .eq('id', entry.id);
 
@@ -113,8 +113,9 @@ function TimeEntriesTable({ refreshTrigger }) {
     } else {
       setEditingEntry(null);
       fetchTimeEntries();
+      onEntryUpdate();
     }
-  }
+  };
 
   const handleColumnSort = (column) => {
     setFilters(prev => ({
@@ -440,7 +441,7 @@ function TimeEntriesTable({ refreshTrigger }) {
                         />
                       </td>
                       <td style={{ fontSize: '12px' }}>
-                        <button onClick={() => handleUpdateEntry(editingEntry)}>Save</button>
+                        <button onClick={() => handleUpdate(editingEntry)}>Save</button>
                         <button onClick={() => setEditingEntry(null)}>Cancel</button>
                       </td>
                     </>
