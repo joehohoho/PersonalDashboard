@@ -167,6 +167,48 @@ function TimeEntry({ refreshTrigger }) {
       // Calculate year percentage difference
       const yearDiff = lastYearHours ? ((yearHours - lastYearHours) / lastYearHours) * 100 : 0;
 
+      // Get all entries for calculating averages
+      const { data: allEntries, error: allEntriesError } = await supabase
+        .from('time_entries')
+        .select('work_date, duration')
+        .order('work_date');
+
+      if (allEntriesError) throw allEntriesError;
+
+      // Calculate unique days worked
+      const uniqueDays = new Set(allEntries.map(entry => entry.work_date)).size;
+
+      // Calculate unique weeks worked
+      const weekMap = allEntries.reduce((acc, entry) => {
+        const date = new Date(entry.work_date);
+        const weekKey = `${date.getFullYear()}-W${Math.floor((date.getDate() - 1) / 7) + 1}`;
+        acc.add(weekKey);
+        return acc;
+      }, new Set());
+      const uniqueWeeks = weekMap.size;
+
+      // Calculate unique months worked
+      const monthMap = allEntries.reduce((acc, entry) => {
+        const monthKey = entry.work_date.substring(0, 7); // YYYY-MM format
+        acc.add(monthKey);
+        return acc;
+      }, new Set());
+      const uniqueMonths = monthMap.size;
+
+      // Calculate averages
+      const avgDaily = uniqueDays ? allEntries.reduce((sum, entry) => sum + Number(entry.duration || 0), 0) / uniqueDays : 0;
+      const avgWeekly = uniqueWeeks ? allEntries.reduce((sum, entry) => sum + Number(entry.duration || 0), 0) / uniqueWeeks : 0;
+      const avgMonthly = uniqueMonths ? allEntries.reduce((sum, entry) => sum + Number(entry.duration || 0), 0) / uniqueMonths : 0;
+
+      console.log('Average calculations:', {
+        days: uniqueDays,
+        weeks: uniqueWeeks,
+        months: uniqueMonths,
+        avgDaily,
+        avgWeekly,
+        avgMonthly
+      });
+
       // Update metrics state with all calculations
       setMetrics(prevMetrics => ({
         ...prevMetrics,
@@ -175,7 +217,13 @@ function TimeEntry({ refreshTrigger }) {
         lastMonthHours,
         year: yearHours,
         yearDiff,
-        lastYearHours
+        lastYearHours,
+        avgDaily,
+        avgWeekly,
+        avgMonthly,
+        uniqueDays,
+        uniqueWeeks,
+        uniqueMonths
       }));
 
     } catch (error) {
@@ -1088,16 +1136,19 @@ function TimeEntry({ refreshTrigger }) {
       {/* Second Row - Average Stats */}
       <div className="metrics-row">
         <div className="metric-card">
-          <h3>Avg Daily Hours</h3>
-          <p>{(metrics.avgDaily || 0).toFixed(2)}</p>
+          <h3>Daily Average</h3>
+          <p>{(metrics.avgDaily || 0).toFixed(2)} hrs</p>
+          <small>Over {metrics.uniqueDays || 0} days</small>
         </div>
         <div className="metric-card">
-          <h3>Avg Weekly Hours</h3>
-          <p>{(metrics.avgWeekly || 0).toFixed(2)}</p>
+          <h3>Weekly Average</h3>
+          <p>{(metrics.avgWeekly || 0).toFixed(2)} hrs</p>
+          <small>Over {metrics.uniqueWeeks || 0} weeks</small>
         </div>
         <div className="metric-card">
-          <h3>Avg Monthly Hours</h3>
-          <p>{(metrics.avgMonthly || 0).toFixed(2)}</p>
+          <h3>Monthly Average</h3>
+          <p>{(metrics.avgMonthly || 0).toFixed(2)} hrs</p>
+          <small>Over {metrics.uniqueMonths || 0} months</small>
         </div>
       </div>
 
