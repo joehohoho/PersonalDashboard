@@ -8,6 +8,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import { supabase } from './supabaseClient';
+import AuthCheck from './components/AuthCheck';
+import Dashboard from './components/Dashboard';
 
 function App() {
   const [isNavOpen, setIsNavOpen] = useState(true);
