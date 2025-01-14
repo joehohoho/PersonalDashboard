@@ -64,148 +64,118 @@ function TimeEntry({ refreshTrigger }) {
 
   const fetchMetrics = async () => {
     try {
+      // Get current date and month boundaries
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const todayStr = today.toLocaleDateString('en-CA');
       
-      // Calculate all date ranges
-      // Today and Yesterday
-      const todayStr = today.toISOString().split('T')[0];
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      // Current month range
+      const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      const currentMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      const currentMonthStartStr = currentMonthStart.toLocaleDateString('en-CA');
+      const currentMonthEndStr = currentMonthEnd.toLocaleDateString('en-CA');
 
-      // Week ranges
-      const weekStart = new Date(today);
-      const day = weekStart.getDay();
-      const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
-      weekStart.setDate(diff);
-      weekStart.setHours(0, 0, 0, 0);
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-      weekEnd.setHours(23, 59, 59, 999);
-      const weekStartStr = weekStart.toISOString().split('T')[0];
-      const weekEndStr = weekEnd.toISOString().split('T')[0];
-
-      // Last week ranges
-      const lastWeekStart = new Date(weekStart);
-      lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-      const lastWeekEnd = new Date(weekEnd);
-      lastWeekEnd.setDate(lastWeekEnd.getDate() - 7);
-      const lastWeekStartStr = lastWeekStart.toISOString().split('T')[0];
-      const lastWeekEndStr = lastWeekEnd.toISOString().split('T')[0];
-
-      // Month ranges
-      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      monthEnd.setHours(23, 59, 59, 999);
-      const monthStartStr = monthStart.toISOString().split('T')[0];
-      const monthEndStr = monthEnd.toISOString().split('T')[0];
-
-      // Last month ranges
+      // Last month range
       const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
       const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-      lastMonthEnd.setHours(23, 59, 59, 999);
-      const lastMonthStartStr = lastMonthStart.toISOString().split('T')[0];
-      const lastMonthEndStr = lastMonthEnd.toISOString().split('T')[0];
+      const lastMonthStartStr = lastMonthStart.toLocaleDateString('en-CA');
+      const lastMonthEndStr = lastMonthEnd.toLocaleDateString('en-CA');
 
-      // Year ranges
-      const yearStart = new Date(today.getFullYear(), 0, 1);
-      const yearEnd = new Date(today.getFullYear(), 11, 31);
-      yearEnd.setHours(23, 59, 59, 999);
-      const yearStartStr = yearStart.toISOString().split('T')[0];
-      const yearEndStr = yearEnd.toISOString().split('T')[0];
+      console.log('Date ranges:', {
+        currentMonth: { start: currentMonthStartStr, end: currentMonthEndStr },
+        lastMonth: { start: lastMonthStartStr, end: lastMonthEndStr }
+      });
 
-      // Fetch all time entries for the current year (includes all periods we need)
+      // Fetch entries for both current and last month
       const { data: timeEntries, error: entriesError } = await supabase
         .from('time_entries')
         .select('work_date, duration')
-        .gte('work_date', yearStartStr)
-        .lte('work_date', yearEndStr);
+        .gte('work_date', lastMonthStartStr)
+        .lte('work_date', currentMonthEndStr);
 
       if (entriesError) throw entriesError;
 
-      // Calculate metrics from the fetched data
-      const todayHours = timeEntries
-        .filter(entry => entry.work_date === todayStr)
-        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
-
-      const yesterdayHours = timeEntries
-        .filter(entry => entry.work_date === yesterdayStr)
-        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
-
-      const weekHours = timeEntries
-        .filter(entry => entry.work_date >= weekStartStr && entry.work_date <= weekEndStr)
-        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
-
-      const lastWeekHours = timeEntries
-        .filter(entry => entry.work_date >= lastWeekStartStr && entry.work_date <= lastWeekEndStr)
-        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
-
+      // Calculate current month total
       const monthHours = timeEntries
-        .filter(entry => entry.work_date >= monthStartStr && entry.work_date <= monthEndStr)
+        .filter(entry => 
+          entry.work_date >= currentMonthStartStr && 
+          entry.work_date <= currentMonthEndStr
+        )
         .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
 
+      // Calculate last month total
       const lastMonthHours = timeEntries
-        .filter(entry => entry.work_date >= lastMonthStartStr && entry.work_date <= lastMonthEndStr)
+        .filter(entry => 
+          entry.work_date >= lastMonthStartStr && 
+          entry.work_date <= lastMonthEndStr
+        )
         .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
 
-      const yearHours = timeEntries
-        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+      console.log('Month calculations:', {
+        currentMonth: monthHours,
+        lastMonth: lastMonthHours
+      });
 
-      // Calculate percentage differences
-      const todayDiff = yesterdayHours ? ((todayHours - yesterdayHours) / yesterdayHours) * 100 : 0;
-      const weekDiff = lastWeekHours ? ((weekHours - lastWeekHours) / lastWeekHours) * 100 : 0;
+      // Calculate percentage difference
       const monthDiff = lastMonthHours ? ((monthHours - lastMonthHours) / lastMonthHours) * 100 : 0;
 
-      // Calculate averages
-      const workDaysInMonth = timeEntries
-        .filter(entry => entry.work_date >= monthStartStr && entry.work_date <= monthEndStr)
-        .reduce((days, entry) => {
-          if (!days.includes(entry.work_date)) {
-            days.push(entry.work_date);
-          }
-          return days;
-        }, []).length;
+      // Year calculations
+      const currentYearStart = new Date(today.getFullYear(), 0, 1);
+      const currentYearEnd = new Date(today.getFullYear(), 11, 31);
+      const currentYearStartStr = currentYearStart.toLocaleDateString('en-CA');
+      const currentYearEndStr = currentYearEnd.toLocaleDateString('en-CA');
 
-      const workDaysInYear = timeEntries
-        .reduce((days, entry) => {
-          if (!days.includes(entry.work_date)) {
-            days.push(entry.work_date);
-          }
-          return days;
-        }, []).length;
+      const lastYearStart = new Date(today.getFullYear() - 1, 0, 1);
+      const lastYearEnd = new Date(today.getFullYear() - 1, 11, 31);
+      const lastYearStartStr = lastYearStart.toLocaleDateString('en-CA');
+      const lastYearEndStr = lastYearEnd.toLocaleDateString('en-CA');
 
-      // Calculate number of weeks with entries
-      const weeksWithEntries = new Set(
-        timeEntries.map(entry => {
-          const entryDate = new Date(entry.work_date);
-          const weekStart = new Date(entryDate);
-          weekStart.setDate(entryDate.getDate() - entryDate.getDay() + (entryDate.getDay() === 0 ? -6 : 1));
-          return weekStart.toISOString().split('T')[0];
-        })
-      ).size;
+      console.log('Year ranges:', {
+        currentYear: { start: currentYearStartStr, end: currentYearEndStr },
+        lastYear: { start: lastYearStartStr, end: lastYearEndStr }
+      });
 
-      // Calculate averages
-      const avgDaily = workDaysInYear > 0 ? yearHours / workDaysInYear : 0;
-      const avgWeekly = weeksWithEntries > 0 ? yearHours / weeksWithEntries : 0;
-      const avgMonthly = (today.getMonth() + 1) > 0 ? yearHours / (today.getMonth() + 1) : 0;
+      // Fetch entries for both current and last year
+      const { data: yearEntries, error: yearError } = await supabase
+        .from('time_entries')
+        .select('work_date, duration')
+        .gte('work_date', lastYearStartStr)
+        .lte('work_date', currentYearEndStr);
 
-      // Update metrics state with all values
+      if (yearError) throw yearError;
+
+      // Calculate current year total
+      const yearHours = yearEntries
+        .filter(entry => 
+          entry.work_date >= currentYearStartStr && 
+          entry.work_date <= currentYearEndStr
+        )
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+
+      // Calculate last year total
+      const lastYearHours = yearEntries
+        .filter(entry => 
+          entry.work_date >= lastYearStartStr && 
+          entry.work_date <= lastYearEndStr
+        )
+        .reduce((sum, entry) => sum + Number(entry.duration || 0), 0);
+
+      console.log('Year calculations:', {
+        currentYear: yearHours,
+        lastYear: lastYearHours
+      });
+
+      // Calculate year percentage difference
+      const yearDiff = lastYearHours ? ((yearHours - lastYearHours) / lastYearHours) * 100 : 0;
+
+      // Update metrics state with all calculations
       setMetrics(prevMetrics => ({
         ...prevMetrics,
-        today: todayHours,
-        todayDiff,
-        yesterdayHours,
-        week: weekHours,
-        weekDiff,
-        lastWeekHours,
         month: monthHours,
         monthDiff,
         lastMonthHours,
         year: yearHours,
-        avgDaily: Number(avgDaily.toFixed(2)),
-        avgWeekly: Number(avgWeekly.toFixed(2)),
-        avgMonthly: Number(avgMonthly.toFixed(2))
+        yearDiff,
+        lastYearHours
       }));
 
     } catch (error) {
@@ -1103,7 +1073,15 @@ function TimeEntry({ refreshTrigger }) {
         </div>
         <div className="metric-card">
           <h3>This Year</h3>
-          <p>{(metrics.year || 0).toFixed(2)}</p>
+          <p>
+            {(metrics.year || 0).toFixed(2)}
+            {metrics.yearDiff !== undefined && metrics.yearDiff !== 0 && (
+              <span className={`diff ${metrics.yearDiff > 0 ? 'positive' : 'negative'}`}>
+                {metrics.yearDiff > 0 ? '↑' : '↓'}{Math.abs(metrics.yearDiff || 0).toFixed(1)}%
+              </span>
+            )}
+          </p>
+          <small>vs Last Year: {(metrics.lastYearHours || 0).toFixed(2)}</small>
         </div>
       </div>
 
