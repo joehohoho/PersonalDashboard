@@ -1181,19 +1181,40 @@ const ApplicationsTable = ({ refreshTrigger, onUpdate }) => {
   };
 
   // Get unique company and position names
-  const companyOptions = ['All', ...new Set(applications
+  const companyOptions = ['All', ...Array.from(new Set(applications
     .map(app => app.company)
-    .filter(Boolean)
-    .sort())];
+    .filter(Boolean)))
+    .sort((a, b) => {
+      // Remove leading special characters and convert to lowercase for consistent sorting
+      const cleanA = a.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
+      const cleanB = b.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
+      
+      // If both names start with numbers, use numeric sorting
+      const numA = cleanA.match(/^\d+/);
+      const numB = cleanB.match(/^\d+/);
+      if (numA && numB) {
+        return parseInt(numA[0]) - parseInt(numB[0]);
+      }
+      
+      // Otherwise use standard string comparison
+      return cleanA.localeCompare(cleanB, 'en', { 
+        numeric: true, 
+        sensitivity: 'base'
+      });
+    })];
 
-  const positionOptions = ['All', ...new Set(applications
+  const positionOptions = ['All', ...Array.from(new Set(applications
     .map(app => app.position)
-    .filter(Boolean)
-    .sort())];
+    .filter(Boolean)))
+    .sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }))];
 
   // Update the filtering logic
   const filteredApplications = applications.filter(app => {
-    const matchesCompany = filters.company === '' || filters.company === 'All' || app.company === filters.company;
+    const cleanCompanyName = (name) => name.replace(/^[\d\s\W]+/, '');
+    
+    const matchesCompany = filters.company === '' || 
+      filters.company === 'All' || 
+      cleanCompanyName(app.company) === cleanCompanyName(filters.company);
     const matchesPosition = filters.position === '' || filters.position === 'All' || app.position === filters.position;
     const matchesStatus = filters.status.length === 0 || filters.status.includes(app.status);
     return matchesCompany && matchesPosition && matchesStatus;
@@ -1219,21 +1240,17 @@ const ApplicationsTable = ({ refreshTrigger, onUpdate }) => {
     // Check if it's a range (stored as "min-max")
     const rangeMatch = String(salaryValue).match(/(\d+)-(\d+)/);
     
+    const formatNumber = (num) => {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0
+      }).format(num);
+    };
+    
     const formattedValue = rangeMatch
-      ? `${parseInt(rangeMatch[1]).toLocaleString('en-US', {
-          style: 'currency',
-          currency: 'USD',
-          maximumFractionDigits: 0
-        })} - ${parseInt(rangeMatch[2]).toLocaleString('en-US', {
-          style: 'currency',
-          currency: 'USD',
-          maximumFractionDigits: 0
-        })}`
-      : parseInt(salaryValue).toLocaleString('en-US', {
-          style: 'currency',
-          currency: 'USD',
-          maximumFractionDigits: 0
-        });
+      ? `${formatNumber(Number(rangeMatch[1]))} - ${formatNumber(Number(rangeMatch[2]))}`
+      : formatNumber(Number(salaryValue));
     
     const currencyLabel = currency === 'USD' ? ' USD' : '';
     return `${isListed ? 'Listed: ' : ''}${formattedValue}${currencyLabel}`;
