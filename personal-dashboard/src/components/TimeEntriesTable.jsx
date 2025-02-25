@@ -37,6 +37,7 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [isTableOpen, setIsTableOpen] = useState(true);
+  const [availableTasks, setAvailableTasks] = useState([]);
 
   useEffect(() => {
     fetchTimeEntries();
@@ -96,6 +97,20 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
     }
   }
 
+  const fetchTasksForProject = async (projectId) => {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('name');
+
+    if (error) {
+      console.error('Error fetching tasks:', error);
+      return [];
+    }
+    return data;
+  };
+
   const handleUpdate = async (entry) => {
     const { error } = await supabase
       .from('time_entries')
@@ -104,7 +119,8 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
         duration: entry.duration,
         description: entry.description,
         start_time: entry.start_time,
-        end_time: entry.end_time
+        end_time: entry.end_time,
+        task_id: entry.task_id
       })
       .eq('id', entry.id);
 
@@ -220,6 +236,15 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
       fetchTimeEntries();
     }
   }
+
+  useEffect(() => {
+    if (editingEntry) {
+      const projectId = editingEntry.tasks?.projects?.id;
+      if (projectId) {
+        fetchTasksForProject(projectId).then(tasks => setAvailableTasks(tasks));
+      }
+    }
+  }, [editingEntry?.tasks?.projects?.id]);
 
   return (
     <div className="time-entries-table">
@@ -393,7 +418,23 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
                         />
                       </td>
                       <td style={{ fontSize: '12px' }}>{entry.tasks?.projects?.name}</td>
-                      <td style={{ fontSize: '12px' }}>{entry.tasks?.name}</td>
+                      <td style={{ fontSize: '12px' }}>
+                        <select
+                          value={editingEntry.task_id || ''}
+                          onChange={(e) => setEditingEntry({
+                            ...editingEntry,
+                            task_id: e.target.value
+                          })}
+                          className="w-full p-1 border rounded"
+                        >
+                          <option value="">Select Task</option>
+                          {availableTasks.map(task => (
+                            <option key={task.id} value={task.id}>
+                              {task.name}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
                       <td style={{ fontSize: '12px' }}>
                         <input
                           type="time"
@@ -458,7 +499,10 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
                       <td className="action-buttons">
                         <button 
                           className="edit-btn" 
-                          onClick={() => setEditingEntry(entry)} 
+                          onClick={() => setEditingEntry({
+                            ...entry,
+                            task_id: entry.tasks?.id
+                          })} 
                           title="Edit"
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
