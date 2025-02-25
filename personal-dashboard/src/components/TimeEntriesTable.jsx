@@ -27,6 +27,7 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
   const [entries, setEntries] = useState([]);
   const [filters, setFilters] = useState({
     project: '',
+    task: '',
     startDate: '',
     endDate: '',
     dateFilterType: 'specific',
@@ -43,6 +44,15 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
     fetchTimeEntries();
     fetchProjects();
   }, [refreshTrigger]);
+
+  useEffect(() => {
+    if (filters.project) {
+      fetchTasksForProject(filters.project).then(tasks => setTasks(tasks));
+    } else {
+      setTasks([]);
+    }
+    setFilters(prev => ({ ...prev, task: '' }));
+  }, [filters.project]);
 
   async function fetchTimeEntries() {
     const { data, error } = await supabase
@@ -144,6 +154,7 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
   const filteredEntries = entries
     .filter(entry => {
       const matchesProject = !filters.project || entry.tasks?.projects?.id === filters.project;
+      const matchesTask = !filters.task || entry.tasks?.id === filters.task;
       
       // Date filtering
       let matchesDate = true;
@@ -159,7 +170,7 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
         }
       }
 
-      return matchesProject && matchesDate;
+      return matchesProject && matchesTask && matchesDate;
     })
     .sort((a, b) => {
       if (!filters.sortColumn) {
@@ -277,6 +288,22 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
             </div>
 
             <div className="filter-group">
+              <label>Task</label>
+              <select
+                value={filters.task}
+                onChange={(e) => setFilters({ ...filters, task: e.target.value })}
+                disabled={!filters.project}
+              >
+                <option value="">All Tasks</option>
+                {tasks.map(task => (
+                  <option key={task.id} value={task.id}>
+                    {task.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-group">
               <label>Date Filter Type</label>
               <select
                 value={filters.dateFilterType}
@@ -338,6 +365,7 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
                 className="clear-filters-btn"
                 onClick={() => setFilters({
                   project: '',
+                  task: '',
                   startDate: '',
                   endDate: '',
                   dateFilterType: 'specific'
