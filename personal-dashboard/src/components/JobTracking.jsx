@@ -50,14 +50,23 @@ const MetricsRow = ({ metrics, refreshTrigger }) => {
       return;
     }
 
-    setMetricsData({
+    const metrics = {
       total: data.length,
       active: data.filter(job => ['Contacted', 'Applied', 'Interview'].includes(job.status)).length,
       rejected: data.filter(job => job.status === 'Rejected').length,
       expired: data.filter(job => job.status === 'Expired').length,
-      interview: data.filter(job => job.has_interview).length,
+      interview: data.filter(job => job.has_interview || job.status === 'Interview').length,
       offers: data.filter(job => job.status === 'Offer').length
+    };
+
+    console.log('Interview metrics:', {
+      totalInterviews: metrics.interview,
+      withInterviewFlag: data.filter(job => job.has_interview).length,
+      withInterviewStatus: data.filter(job => job.status === 'Interview').length,
+      allInterviewData: data.filter(job => job.has_interview || job.status === 'Interview')
     });
+
+    setMetricsData(metrics);
   };
 
   const calculatePercentage = (value) => {
@@ -1696,9 +1705,16 @@ function JobTracking() {
       active: data.filter(job => ['Contacted', 'Applied', 'Interview'].includes(job.status)).length,
       rejected: data.filter(job => job.status === 'Rejected').length,
       expired: data.filter(job => job.status === 'Expired').length,
-      interview: data.filter(job => job.has_interview).length,
+      interview: data.filter(job => job.has_interview || job.status === 'Interview').length,
       offers: data.filter(job => job.status === 'Offer').length
     };
+
+    console.log('Interview metrics:', {
+      totalInterviews: metrics.interview,
+      withInterviewFlag: data.filter(job => job.has_interview).length,
+      withInterviewStatus: data.filter(job => job.status === 'Interview').length,
+      allInterviewData: data.filter(job => job.has_interview || job.status === 'Interview')
+    });
 
     setMetrics(metrics);
   };

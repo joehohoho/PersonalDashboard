@@ -1,18 +1,57 @@
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import { useEffect } from 'react';
 import '../styles/Login.css';
 
 const Login = () => {
   const navigate = useNavigate();
+  const ALLOWED_EMAIL = import.meta.env.VITE_ALLOWED_EMAIL;
+
+  useEffect(() => {
+    // Debug log to verify environment variable
+    console.log('Login Component - Allowed Email:', ALLOWED_EMAIL);
+
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Debug log for comparison
+        console.log('Login Check - Comparing emails:', {
+          userEmail: user.email,
+          allowedEmail: ALLOWED_EMAIL,
+          matches: user.email === ALLOWED_EMAIL
+        });
+        
+        if (user.email === ALLOWED_EMAIL) {
+          navigate('/');
+        } else {
+          console.log('Unauthorized email, signing out...');
+          await supabase.auth.signOut();
+          alert(`Unauthorized access. Please use ${ALLOWED_EMAIL} to login.`);
+          window.location.reload();
+        }
+      }
+    };
+
+    checkUser();
+  }, [navigate, ALLOWED_EMAIL]);
 
   const handleGoogleLogin = async () => {
     try {
-      await supabase.auth.signInWithOAuth({
+      await supabase.auth.signOut(); // Clear any existing session
+      
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'select_account', // Force account selection
+          },
+          redirectTo: `${window.location.origin}/login`
         },
       });
+
+      if (error) throw error;
     } catch (error) {
       console.error('Error logging in with Google:', error.message);
     }
