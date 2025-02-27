@@ -61,6 +61,8 @@ function TimeEntry({ refreshTrigger }) {
   const [timeDistribution, setTimeDistribution] = useState([]);
   const [dayDistribution, setDayDistribution] = useState([]);
   const [weekEfficiency, setWeekEfficiency] = useState([]);
+  const [selectedProjectForGraph, setSelectedProjectForGraph] = useState('');
+  const [taskBreakdown, setTaskBreakdown] = useState([]);
 
   const fetchMetrics = async () => {
     try {
@@ -1063,6 +1065,103 @@ function TimeEntry({ refreshTrigger }) {
     await fetchMetrics();
   };
 
+  const fetchTaskBreakdown = async (projectId) => {
+    if (!projectId) {
+      setTaskBreakdown([]);
+      return;
+    }
+
+    const { data: timeEntries, error } = await supabase
+      .from('time_entries')
+      .select(`
+        duration,
+        tasks (
+          id,
+          name
+        )
+      `)
+      .eq('tasks.project_id', projectId);
+
+    if (error) {
+      console.error('Error fetching task breakdown:', error);
+      return;
+    }
+
+    // Calculate hours per task
+    const taskHours = timeEntries.reduce((acc, entry) => {
+      const taskName = entry.tasks?.name;
+      if (taskName) {
+        acc[taskName] = (acc[taskName] || 0) + Number(entry.duration);
+      }
+      return acc;
+    }, {});
+
+    // Convert to array and sort by hours
+    const sortedTasks = Object.entries(taskHours)
+      .map(([name, hours]) => ({
+        name,
+        hours: Number(hours.toFixed(2))
+      }))
+      .sort((a, b) => b.hours - a.hours);
+
+    setTaskBreakdown(sortedTasks);
+  };
+
+  // Add effect to fetch task breakdown when project changes
+  useEffect(() => {
+    fetchTaskBreakdown(selectedProjectForGraph);
+  }, [selectedProjectForGraph]);
+
+  // Create chart data for task breakdown
+  const taskBreakdownChartData = {
+    labels: taskBreakdown.map(task => task.name),
+    datasets: [{
+      label: 'Hours',
+      data: taskBreakdown.map(task => task.hours),
+      backgroundColor: '#45b7cd',
+      borderRadius: 6,
+    }]
+  };
+
+  const taskBreakdownChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      },
+      title: {
+        display: true,
+        text: 'Task Hours Breakdown',
+        color: '#ffffff',
+        font: {
+          size: 16
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        },
+        ticks: {
+          color: '#ffffff'
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: '#ffffff',
+          maxRotation: 45,
+          minRotation: 45
+        }
+      }
+    }
+  };
+
   return (
     <div className="dashboard">
       {/* First Row - Current Period Stats */}
@@ -1173,8 +1272,9 @@ function TimeEntry({ refreshTrigger }) {
         </div>
       </div>
 
-      {/* Time Entry Card */}
+      {/* Time Entry and Task Breakdown Grid */}
       <div className="time-entry-grid">
+        {/* Existing Time Entry Card */}
         <div className="entry-card">
           <div className="card-header" onClick={() => setIsTimeEntryFormOpen(!isTimeEntryFormOpen)}>
             <h2>Add Time Entry</h2>
@@ -1279,6 +1379,68 @@ function TimeEntry({ refreshTrigger }) {
               <button type="submit" className="submit-btn">Add Entry</button>
             </form>
           )}
+        </div>
+
+        {/* Task Breakdown Section */}
+        <div className="entry-card">
+          <div className="card-header">
+            <h2>Task Hours Breakdown</h2>
+          </div>
+          <div className="card-content" style={{ padding: '1rem' }}>
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
+              <label>Select Project</label>
+              <select
+                value={selectedProjectForGraph}
+                onChange={(e) => setSelectedProjectForGraph(e.target.value)}
+                style={{ marginLeft: '1rem' }}
+              >
+                <option value="">Choose a project</option>
+                {projects.map(project => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {selectedProjectForGraph && (
+              <>
+                <div style={{ height: '300px', marginBottom: '1rem' }}>
+                  <Bar data={taskBreakdownChartData} options={taskBreakdownChartOptions} />
+                </div>
+                <div className="task-breakdown-table" style={{ 
+                  maxHeight: '200px', 
+                  overflowY: 'auto',
+                  fontSize: '14px'
+                }}>
+                  <table style={{ width: '100%' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ textAlign: 'left' }}>Task</th>
+                        <th style={{ textAlign: 'right' }}>Hours</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {taskBreakdown.map(task => (
+                        <tr key={task.name}>
+                          <td>{task.name}</td>
+                          <td style={{ textAlign: 'right' }}>{task.hours.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td style={{ fontWeight: 'bold' }}>Total</td>
+                        <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                          {taskBreakdown.reduce((sum, task) => sum + task.hours, 0).toFixed(2)}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 

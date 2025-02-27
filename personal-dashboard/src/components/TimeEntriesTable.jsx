@@ -445,7 +445,35 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
                           })}
                         />
                       </td>
-                      <td style={{ fontSize: '12px' }}>{entry.tasks?.projects?.name}</td>
+                      <td style={{ fontSize: '12px', minWidth: '200px' }}>
+                        <select
+                          value={editingEntry.tasks?.projects?.id || ''}
+                          onChange={async (e) => {
+                            const projectId = e.target.value;
+                            // Fetch tasks for the selected project
+                            const tasks = await fetchTasksForProject(projectId);
+                            setAvailableTasks(tasks);
+                            // Update editingEntry with new project
+                            setEditingEntry({
+                              ...editingEntry,
+                              task_id: '', // Clear task when project changes
+                              tasks: {
+                                ...editingEntry.tasks,
+                                project_id: projectId,
+                                projects: projects.find(p => p.id === projectId)
+                              }
+                            });
+                          }}
+                          className="w-full p-1 border rounded"
+                        >
+                          <option value="">Select Project</option>
+                          {projects.map(project => (
+                            <option key={project.id} value={project.id}>
+                              {project.name} {project.status === 'closed' ? '(Closed)' : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
                       <td style={{ fontSize: '12px' }}>
                         <select
                           value={editingEntry.task_id || ''}
@@ -454,6 +482,7 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
                             task_id: e.target.value
                           })}
                           className="w-full p-1 border rounded"
+                          disabled={!editingEntry.tasks?.projects?.id}
                         >
                           <option value="">Select Task</option>
                           {availableTasks.map(task => (
@@ -527,10 +556,17 @@ function TimeEntriesTable({ refreshTrigger, onEntryUpdate }) {
                       <td className="action-buttons">
                         <button 
                           className="edit-btn" 
-                          onClick={() => setEditingEntry({
-                            ...entry,
-                            task_id: entry.tasks?.id
-                          })} 
+                          onClick={() => {
+                            setEditingEntry({
+                              ...entry,
+                              task_id: entry.tasks?.id
+                            });
+                            // Fetch tasks for the current project when entering edit mode
+                            if (entry.tasks?.projects?.id) {
+                              fetchTasksForProject(entry.tasks.projects.id)
+                                .then(tasks => setAvailableTasks(tasks));
+                            }
+                          }}
                           title="Edit"
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
