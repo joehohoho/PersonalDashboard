@@ -27,10 +27,11 @@ const SERVER_BASE_URL = 'http://localhost:8080';
 
 const calculateDaysUnemployed = () => {
   const startDate = new Date('2024-05-01');
-  const today = new Date();
-  const diffTime = Math.abs(today - startDate);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
+  const endDate = new Date('2025-03-05');
+  
+  const timeDiff = endDate.getTime() - startDate.getTime();
+  const totalDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+  return totalDays;
 };
 
 const MetricsRow = ({ metrics, refreshTrigger }) => {
@@ -78,8 +79,8 @@ const MetricsRow = ({ metrics, refreshTrigger }) => {
     <div className="metrics-row">
       <div className="metric-card">
         <h3>Days Unemployed</h3>
-        <p>{calculateDaysUnemployed()}</p>
-        <small>Since May 1st, 2024</small>
+        <p>309</p>
+        <small>01 May 2024 - 05 Mar 2025</small>
       </div>
       <div className="metric-card">
         <h3>Total Applications</h3>
