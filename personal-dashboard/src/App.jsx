@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import TimeEntry from './components/TimeEntry'
 import JobTracking from './components/JobTracking'
 import Finance from './components/Finance'
+import TaskTracker from './components/TaskTracker'
 import './styles/Dashboard.css'
 import { launchTimeTracker } from './utils/electronLauncher.js';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -50,6 +51,8 @@ function App() {
         return <JobTracking />;
       case 'finance':
         return <Finance />;
+      case 'taskTracker':
+        return <TaskTracker />;
       default:
         return (
           <div className="dashboard">
@@ -142,6 +145,14 @@ function App() {
                     >
                       <span className="nav-icon">🎯</span>
                       <span className="nav-text">Job Tracking</span>
+                    </a>
+                    <a 
+                      href="#" 
+                      className={`nav-item ${currentPage === 'taskTracker' ? 'active' : ''}`}
+                      onClick={() => setCurrentPage('taskTracker')}
+                    >
+                      <span className="nav-icon">✅</span>
+                      <span className="nav-text">Tasks</span>
                     </a>
                   </div>
 

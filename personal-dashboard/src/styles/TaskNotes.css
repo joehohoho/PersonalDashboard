@@ -1,0 +1,229 @@
+.task-notes {
+  position: relative;
+  display: inline-block;
+}
+
+.notes-toggle-btn {
+  padding: 0.4rem 0.8rem;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s;
+  margin-right: 0.5rem;
+}
+
+.notes-toggle-btn:hover {
+  background: #5a6268;
+}
+
+.notes-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 1000;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  width: 400px;
+  max-width: 90vw;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.notes-header h4 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.notes-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notes-close-btn:hover {
+  color: var(--text-primary);
+}
+
+.notes-error {
+  padding: 0.75rem 1rem;
+  background: rgba(220, 53, 69, 0.2);
+  border: 1px solid #dc3545;
+  border-radius: 4px;
+  color: #ff6b6b;
+  margin: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.notes-success {
+  padding: 0.75rem 1rem;
+  background: rgba(40, 167, 69, 0.2);
+  border: 1px solid #28a745;
+  border-radius: 4px;
+  color: #4caf50;
+  margin: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.notes-form {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.notes-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  margin-bottom: 0.75rem;
+}
+
+.notes-input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+.notes-submit-btn {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: var(--accent-blue);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.notes-submit-btn:hover:not(:disabled) {
+  background: #1e6dd9;
+}
+
+.notes-submit-btn:active:not(:disabled) {
+  background: #1a5fc4;
+  transform: scale(0.98);
+}
+
+.notes-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #6c757d;
+  box-shadow: none;
+}
+
+.notes-submit-btn:not(:disabled) {
+  background: var(--accent-blue);
+}
+
+.notes-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+}
+
+.no-notes {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 2rem 1rem;
+  font-size: 0.9rem;
+}
+
+.note-item {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.note-item:last-child {
+  margin-bottom: 0;
+}
+
+.note-content {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.note-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.note-date {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.note-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem;
+  transition: color 0.2s;
+}
+
+.note-delete-btn:hover {
+  color: #dc3545;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .notes-panel {
+    width: 320px;
+    max-height: 400px;
+  }
+
+  .notes-header h4 {
+    font-size: 0.9rem;
+  }
+
+  .note-content {
+    font-size: 0.9rem;
+  }
+}
+
