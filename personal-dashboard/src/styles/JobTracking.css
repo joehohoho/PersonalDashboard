@@ -1,5 +1,7 @@
 .job-tracking {
   padding: 1rem;
+  /* Prevent any horizontal scrollbar from minor overflows in child rows */
+  overflow-x: hidden;
 }
 
 .metrics-row {
@@ -7,6 +9,9 @@
   gap: 1rem;
   margin: 0.5rem 0 1rem 0;
   padding: 0 1rem;
+  /* Ensure metric rows don't create horizontal scrollbars */
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .metric-card {

@@ -34,17 +34,27 @@ const calculateDaysUnemployed = () => {
   return totalDays;
 };
 
-const MetricsRow = ({ metrics, refreshTrigger }) => {
+const MetricsRow = ({ metrics, refreshTrigger, dateRange = null }) => {
   const [metricsData, setMetricsData] = useState(metrics);
 
   useEffect(() => {
     fetchMetrics();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, dateRange]);
 
   const fetchMetrics = async () => {
-    const { data, error } = await supabase
-      .from('job_applications')
-      .select('*');
+    let query = supabase.from('job_applications').select('*');
+
+    // Apply date range filter if provided
+    if (dateRange) {
+      if (dateRange.start) {
+        query = query.gte('date_applied', dateRange.start);
+      }
+      if (dateRange.end) {
+        query = query.lte('date_applied', dateRange.end);
+      }
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching metrics:', error);
@@ -75,12 +85,36 @@ const MetricsRow = ({ metrics, refreshTrigger }) => {
     return `${Math.round((value / metricsData.total) * 100)}%`;
   };
 
+  const calculateDays = () => {
+    if (!dateRange || !dateRange.start || !dateRange.end) return 0;
+    const startDate = new Date(dateRange.start);
+    const endDate = new Date(dateRange.end);
+    const timeDiff = endDate.getTime() - startDate.getTime();
+    const totalDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    return totalDays;
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+  };
+
+  const getDatesString = () => {
+    if (!dateRange) return '01 May 2024 - 05 Mar 2025';
+    return `${formatDate(dateRange.start)} - ${formatDate(dateRange.end)}`;
+  };
+
   return (
     <div className="metrics-row">
       <div className="metric-card">
         <h3>Days Unemployed</h3>
-        <p>309</p>
-        <small>01 May 2024 - 05 Mar 2025</small>
+        <p>{calculateDays()}</p>
+        <small>{getDatesString()}</small>
       </div>
       <div className="metric-card">
         <h3>Total Applications</h3>
@@ -1923,9 +1957,34 @@ function JobTracking() {
     }, 100);
   };
 
+  // Calculate current date
+  const getCurrentDate = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
+  // Define date ranges
+  const firstDateRange = {
+    start: '2024-05-01',
+    end: '2025-03-05'
+  };
+
+  const secondDateRange = {
+    start: '2025-10-07',
+    end: getCurrentDate()
+  };
+
   return (
     <div className="job-tracking">
-      <MetricsRow metrics={metrics} refreshTrigger={refreshTrigger} />
+      <MetricsRow 
+        metrics={metrics} 
+        refreshTrigger={refreshTrigger} 
+        dateRange={firstDateRange}
+      />
+      <MetricsRow 
+        metrics={metrics} 
+        refreshTrigger={refreshTrigger} 
+        dateRange={secondDateRange}
+      />
       <StatsCards 
         applicationStats={applicationStats}
         salaryStats={salaryStats}

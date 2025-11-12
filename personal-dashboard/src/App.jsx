@@ -16,16 +16,19 @@ function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const ALLOWED_EMAIL = import.meta.env.VITE_ALLOWED_EMAIL;
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      console.log('App: Initial session check:', initialSession);
       setSession(initialSession);
       setLoading(false);
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('App: Auth state change:', event, session);
       setSession(session);
     });
 
@@ -37,6 +40,7 @@ function App() {
   }
 
   console.log('App: Rendering with session:', session);
+  console.log('App: Allowed email:', ALLOWED_EMAIL);
 
   const renderPage = () => {
     switch(currentPage) {
@@ -89,7 +93,7 @@ function App() {
         <Route 
           path="/login" 
           element={
-            session ? (
+            session && session.user && session.user.email === ALLOWED_EMAIL ? (
               <Navigate to="/" replace />
             ) : (
               <Login />
@@ -99,7 +103,7 @@ function App() {
         <Route
           path="/"
           element={
-            session ? (
+            session && session.user && session.user.email === ALLOWED_EMAIL ? (
               <div className="app-container">
                 <nav className={`sidebar ${!isNavOpen ? 'collapsed' : ''}`}>
                   <div className="logo">
